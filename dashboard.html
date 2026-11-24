@@ -1,0 +1,1896 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Grok HR Management - Dashboard</title>
+
+  <!-- Google Fonts Preconnect and Fallback CDN -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Noto+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* Self-hosted @font-face definitions for 100% reliable local offline loading */
+    @font-face {
+      font-family: 'Bricolage Grotesque';
+      font-style: normal;
+      font-weight: 400 700;
+      font-display: swap;
+      src: url('fonts/bricolage-grotesque.woff2') format('woff2');
+    }
+    @font-face {
+      font-family: 'IBM Plex Sans Arabic';
+      font-style: normal;
+      font-weight: 400;
+      font-display: swap;
+      src: url('fonts/ibm-plex-sans-arabic-400.woff2') format('woff2');
+    }
+    @font-face {
+      font-family: 'IBM Plex Sans Arabic';
+      font-style: normal;
+      font-weight: 600;
+      font-display: swap;
+      src: url('fonts/ibm-plex-sans-arabic-600.woff2') format('woff2');
+    }
+    @font-face {
+      font-family: 'IBM Plex Sans Arabic';
+      font-style: normal;
+      font-weight: 700;
+      font-display: swap;
+      src: url('fonts/ibm-plex-sans-arabic-700.woff2') format('woff2');
+    }
+
+    /* Design Tokens */
+    :root {
+      --font-sans: 'Bricolage Grotesque', sans-serif;
+      --font-arabic: 'IBM Plex Sans Arabic', 'Noto Sans Arabic', sans-serif;
+      
+      --color-sidebar: #F5F4F0;
+      --color-main-bg: #FFFFFF;
+      --color-stat-card: #FAF9F7;
+      --color-border-card: #E8E6E1;
+      --color-border-table: #ECEAE5;
+      --color-border-subtle: #F0EEE9;
+      --color-border-header: #EDEBE6;
+      --color-border-col: #F0F2F5;
+      --color-text-primary: #12161E;
+      --color-text-secondary: #5F6774;
+      --color-text-muted: #8E95A2;
+      --color-black: #12161E;
+      --color-black-hover: #222733;
+
+      --sidebar-width: 230px;
+      --sidebar-collapsed-width: 68px;
+      --radius-panel: 16px;
+      --radius-table: 16px;
+      --radius-card: 12px;
+      --row-height: 60px;
+      --page-margin: 56px;
+    }
+
+    /* Universal Font Enforcement */
+    *, *::before, *::after,
+    html, body, button, input, select, textarea,
+    table, th, td, tr, .custom-tooltip,
+    .toast, .pagination-controls, .subtabs-container, .pill-badge, .custom-checkbox {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: var(--font-sans) !important;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Arabic Typography & RTL Enforcement */
+    body[dir="rtl"],
+    body[dir="rtl"] *,
+    body.lang-ar,
+    body.lang-ar *,
+    [lang="ar"],
+    [lang="ar"] * {
+      font-family: var(--font-arabic) !important;
+    }
+
+    /* Page itself must NEVER scroll */
+    html, body {
+      height: 100dvh;
+      overflow: hidden;
+      margin: 0;
+      padding: 0;
+      background-color: var(--color-sidebar);
+      color: var(--color-text-primary);
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    /* Top thin black line */
+    .top-black-bar {
+      height: 3px;
+      width: 100%;
+      background-color: #12161E;
+      flex-shrink: 0;
+    }
+
+    /* App Shell */
+    .app-layout {
+      display: flex;
+      height: calc(100dvh - 3px);
+      width: 100%;
+      background-color: var(--color-sidebar);
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Left Sidebar: Fixed width ~230px, full height */
+    aside.sidebar {
+      width: var(--sidebar-width);
+      height: 100%;
+      flex-shrink: 0;
+      background-color: var(--color-sidebar);
+      display: flex;
+      flex-direction: column;
+      padding: 20px 14px 24px 18px;
+      user-select: none;
+      overflow: hidden;
+      position: relative;
+      transition: width 0.2s cubic-bezier(0.4, 0, 0.2, 1), transform 0.25s ease;
+      z-index: 40;
+    }
+    body.lang-ar aside.sidebar {
+      padding: 20px 18px 24px 14px;
+    }
+
+    /* Collapsed sidebar state */
+    aside.sidebar.collapsed {
+      width: var(--sidebar-collapsed-width);
+      padding: 20px 8px 24px 8px;
+    }
+    aside.sidebar.collapsed .logo-text,
+    aside.sidebar.collapsed .nav-section-title span,
+    aside.sidebar.collapsed .nav-item span,
+    aside.sidebar.collapsed .cursor-pointer-badge {
+      display: none !important;
+    }
+    aside.sidebar.collapsed .nav-section-title {
+      justify-content: center;
+      padding: 6px 0;
+    }
+    aside.sidebar.collapsed .nav-item {
+      justify-content: center;
+      padding: 9px 0;
+    }
+    aside.sidebar.collapsed .collapse-btn svg {
+      transform: rotate(180deg);
+    }
+    body.lang-ar aside.sidebar.collapsed .collapse-btn svg {
+      transform: rotate(0deg);
+    }
+
+    /* Sidebar Header */
+    .sidebar-header {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      padding-right: 6px;
+    }
+    body.lang-ar .sidebar-header {
+      padding-right: 0;
+      padding-left: 6px;
+    }
+
+    .logo-container {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      text-decoration: none;
+      color: var(--color-text-primary);
+    }
+    .logo-icon {
+      width: 26px;
+      height: 26px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .logo-text {
+      font-size: 19px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      white-space: nowrap;
+    }
+
+    .collapse-btn {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: 1px solid #E2E0DC;
+      background: #FFFFFF;
+      color: var(--color-text-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      flex-shrink: 0;
+    }
+    .collapse-btn:hover {
+      background: #FAF9F7;
+      color: var(--color-text-primary);
+    }
+    body.lang-ar .collapse-btn svg {
+      transform: rotate(180deg);
+    }
+
+    /* Scrollable nav list inside sidebar */
+    .sidebar-nav {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      overflow-x: hidden;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .sidebar-nav::-webkit-scrollbar {
+      display: none;
+    }
+
+    .nav-section {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .nav-section-title {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      color: var(--color-text-muted);
+      text-transform: uppercase;
+      padding: 6px 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+    }
+    .nav-section-title svg {
+      width: 12px;
+      height: 12px;
+      stroke-width: 2;
+      color: var(--color-text-muted);
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      padding: 7px 11px;
+      border-radius: 9999px;
+      color: var(--color-text-secondary);
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.12s ease;
+      position: relative;
+      white-space: nowrap;
+    }
+    .nav-item:hover {
+      color: var(--color-text-primary);
+      background: rgba(255, 255, 255, 0.5);
+    }
+
+    /* Active Dashboard item */
+    .nav-item.active {
+      background: #FFFFFF;
+      color: var(--color-text-primary);
+      font-weight: 600;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.02);
+    }
+    .nav-item svg {
+      width: 15px;
+      height: 15px;
+      stroke-width: 1.7;
+      color: #6B7280;
+      flex-shrink: 0;
+    }
+    .nav-item.active svg {
+      color: var(--color-text-primary);
+    }
+    .cursor-pointer-badge {
+      display: inline-flex;
+      position: absolute;
+      right: 12px;
+      width: 16px;
+      height: 16px;
+      opacity: 0.85;
+    }
+    body.lang-ar .cursor-pointer-badge {
+      right: auto;
+      left: 12px;
+      transform: scaleX(-1);
+    }
+
+    /* Right: White Main Panel */
+    main.main-panel {
+      flex: 1;
+      min-width: 0;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      background-color: var(--color-main-bg);
+      border-top-left-radius: var(--radius-panel);
+      box-shadow: -2px 0 6px rgba(0, 0, 0, 0.02);
+      overflow: hidden;
+      position: relative;
+    }
+    body.lang-ar main.main-panel {
+      border-top-left-radius: 0;
+      border-top-right-radius: var(--radius-panel);
+      box-shadow: 2px 0 6px rgba(0, 0, 0, 0.02);
+    }
+
+    /* Pinned Header Bar */
+    .header-bar {
+      height: 60px;
+      flex-shrink: 0;
+      background-color: #FFFFFF;
+      border-bottom: 1px solid var(--color-border-header);
+      z-index: 30;
+      padding: 0 var(--page-margin);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+    }
+    .header-left-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .mobile-menu-btn {
+      display: none;
+      width: 32px;
+      height: 32px;
+      border: 1px solid #E5E7EB;
+      background: #FFFFFF;
+      border-radius: 6px;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: #374151;
+    }
+
+    .breadcrumb {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      letter-spacing: 0.05em;
+      font-weight: 600;
+      color: var(--color-text-muted);
+      text-transform: uppercase;
+    }
+    .breadcrumb svg.device-icon {
+      width: 16px;
+      height: 16px;
+      stroke-width: 1.8;
+      color: #4B5563;
+    }
+    .breadcrumb .chevron {
+      color: #9CA3AF;
+      font-size: 11px;
+    }
+    body.lang-ar .breadcrumb .chevron {
+      transform: rotate(180deg);
+    }
+    .breadcrumb a {
+      color: var(--color-text-secondary);
+      text-decoration: none;
+    }
+    .breadcrumb .current {
+      color: var(--color-text-primary);
+      font-weight: 700;
+      border-bottom: 1.5px solid var(--color-text-primary);
+      padding-bottom: 1px;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .header-icon-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: transparent;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #555E6D;
+      cursor: pointer;
+      position: relative;
+      transition: background 0.15s;
+    }
+    .header-icon-btn:hover {
+      background: #F4F2EE;
+      color: var(--color-text-primary);
+    }
+    .badge-dot {
+      position: absolute;
+      top: 6px;
+      right: 7px;
+      width: 6px;
+      height: 6px;
+      background: #EF4444;
+      border-radius: 50%;
+      border: 1px solid #FFFFFF;
+    }
+    body.lang-ar .badge-dot {
+      right: auto;
+      left: 7px;
+    }
+
+    .user-block {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 2px 6px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .user-block:hover {
+      background: #F4F2EE;
+    }
+    .user-avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 1px solid #E5E7EB;
+    }
+    .user-info {
+      display: flex;
+      flex-direction: column;
+    }
+    .user-name {
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--color-text-primary);
+      line-height: 1.2;
+    }
+    .user-email {
+      font-size: 11px;
+      color: var(--color-text-muted);
+    }
+
+    /* Scroll Container: 56px margin */
+    .scroll-container {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      overflow-x: hidden;
+      scrollbar-gutter: stable;
+      padding: 24px var(--page-margin) 56px var(--page-margin);
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      position: relative;
+    }
+    .scroll-container::-webkit-scrollbar {
+      width: 6px;
+    }
+    .scroll-container::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .scroll-container::-webkit-scrollbar-thumb {
+      background: #D8D6D1;
+      border-radius: 9999px;
+    }
+    .scroll-container::-webkit-scrollbar-thumb:hover {
+      background: #B4B1A9;
+    }
+
+    /* Page Header */
+    .page-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .page-title-box h1 {
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--color-text-primary);
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+      margin-bottom: 4px;
+    }
+    .page-title-box p {
+      font-size: 12.5px;
+      color: var(--color-text-secondary);
+    }
+    .page-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Buttons */
+    .btn {
+      height: 35px;
+      padding: 0 14px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      user-select: none;
+    }
+    .btn-export {
+      background: #FFFFFF;
+      border: 1px solid #E5E7EB;
+      color: #374151;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+    }
+    .btn-export:hover {
+      background: #FAF9F7;
+      border-color: #D3D0C9;
+    }
+    .btn-create {
+      background: linear-gradient(180deg, #22262F 0%, #12161E 100%);
+      border: 1px solid #12161E;
+      color: #FFFFFF;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+    }
+    .btn-create:hover {
+      background: #252A36;
+    }
+
+    /* Sub Tabs: Pill Container */
+    .subtabs-container {
+      display: inline-flex;
+      align-items: center;
+      background: #FFFFFF;
+      padding: 3px;
+      border-radius: 8px;
+      width: fit-content;
+      border: 1px solid #E5E7EB;
+    }
+    .subtab-btn {
+      border: none;
+      background: transparent;
+      padding: 5px 14px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--color-text-secondary);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .subtab-btn.active {
+      background: #12161E;
+      color: #FFFFFF;
+      font-weight: 600;
+    }
+
+    /* 4 Stat Cards in #FAF9F7 */
+    .stat-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+    @media (max-width: 1024px) {
+      .stat-cards-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+    @media (max-width: 640px) {
+      .stat-cards-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    .stat-card {
+      background-color: var(--color-stat-card);
+      border: 1px solid var(--color-border-subtle);
+      border-radius: var(--radius-card);
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .stat-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .stat-card-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--color-text-muted);
+    }
+    .stat-icon-chip {
+      width: 26px;
+      height: 26px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .chip-blue {
+      background: #EFF6FF;
+      color: #3B82F6;
+    }
+    .chip-green {
+      background: #ECFDF5;
+      color: #10B981;
+    }
+    .chip-orange {
+      background: #FFF7ED;
+      color: #F97316;
+    }
+    .chip-purple {
+      background: #F5F3FF;
+      color: #8B5CF6;
+    }
+    .stat-card-value {
+      font-size: 30px;
+      font-weight: 700;
+      color: var(--color-text-primary);
+      letter-spacing: -0.03em;
+      line-height: 1;
+    }
+    .stat-card-sub {
+      font-size: 11px;
+      color: var(--color-text-muted);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .trend-up {
+      color: #10B981;
+      font-weight: 600;
+    }
+
+    /* Dashboard Middle Section: 2-column layout */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 1.9fr 1.1fr;
+      gap: 16px;
+    }
+    @media (max-width: 1024px) {
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* General Widget Box */
+    .widget-card {
+      background: #FFFFFF;
+      border: 1px solid var(--color-border-table);
+      border-radius: var(--radius-table);
+      padding: 18px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .widget-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .widget-title-group h2 {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--color-text-primary);
+    }
+    .widget-title-group p {
+      font-size: 11.5px;
+      color: var(--color-text-muted);
+    }
+    .widget-legend {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 11px;
+      color: var(--color-text-secondary);
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .legend-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+    }
+    .dot-present { background: #10B981; }
+    .dot-remote { background: #3B82F6; }
+    .dot-leave { background: #F59E0B; }
+
+    /* Modern Bar Chart Container */
+    .chart-container {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 8px 0;
+    }
+    .bar-chart-row {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      height: 140px;
+      padding: 0 10px;
+      border-bottom: 1px solid var(--color-border-subtle);
+      gap: 14px;
+    }
+    .chart-column {
+      flex: 1;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      position: relative;
+    }
+    .bar-stack {
+      width: 100%;
+      max-width: 38px;
+      display: flex;
+      flex-direction: column-reverse;
+      border-radius: 6px 6px 0 0;
+      overflow: hidden;
+      background: #F3F4F6;
+      transition: transform 0.15s ease;
+    }
+    .chart-column:hover .bar-stack {
+      transform: translateY(-2px);
+    }
+    .bar-segment-present { background: #10B981; }
+    .bar-segment-remote { background: #3B82F6; }
+    .bar-segment-leave { background: #F59E0B; }
+    
+    .chart-label {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--color-text-secondary);
+      text-align: center;
+    }
+    .chart-metric-pct {
+      font-size: 10.5px;
+      font-weight: 600;
+      color: var(--color-text-primary);
+    }
+
+    /* Department Headcount Progress Bars */
+    .dept-list {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .dept-item {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .dept-item-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12px;
+    }
+    .dept-name {
+      font-weight: 500;
+      color: var(--color-text-primary);
+    }
+    .dept-count {
+      color: var(--color-text-muted);
+      font-size: 11.5px;
+    }
+    .progress-bar-bg {
+      width: 100%;
+      height: 6px;
+      background: #F3F4F6;
+      border-radius: 9999px;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      border-radius: 9999px;
+    }
+    .fill-tech { width: 42%; background: #12161E; }
+    .fill-ops { width: 24%; background: #3B82F6; }
+    .fill-prod { width: 18%; background: #10B981; }
+    .fill-mkt { width: 16%; background: #F59E0B; }
+
+    /* Action Checklist Items */
+    .action-items-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .action-item-card {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px 12px;
+      border: 1px solid var(--color-border-subtle);
+      border-radius: 8px;
+      background: var(--color-stat-card);
+      transition: background 0.15s;
+    }
+    .action-item-card:hover {
+      background: #FFFFFF;
+      border-color: #E2E0DC;
+    }
+    .action-item-text {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .action-item-title {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--color-text-primary);
+    }
+    .action-item-meta {
+      font-size: 11px;
+      color: var(--color-text-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Embedded Table for Dashboard Queue */
+    .table-card {
+      background: #FFFFFF;
+      border: 1px solid var(--color-border-table);
+      border-radius: var(--radius-table);
+      position: relative;
+    }
+    table.data-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      text-align: left;
+    }
+    body.lang-ar table.data-table {
+      text-align: right;
+    }
+    table.data-table thead th {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: #FAF9F7;
+      padding: 9px 12px;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--color-text-muted);
+      border-bottom: 1px solid var(--color-border-table);
+      border-right: 1px solid var(--color-border-col);
+      white-space: nowrap;
+    }
+    table.data-table thead th:first-child {
+      border-top-left-radius: 15px;
+    }
+    table.data-table thead th:last-child {
+      border-top-right-radius: 15px;
+      border-right: none;
+    }
+    body.lang-ar table.data-table thead th {
+      border-right: none;
+      border-left: 1px solid var(--color-border-col);
+    }
+    body.lang-ar table.data-table thead th:first-child {
+      border-top-left-radius: 0;
+      border-top-right-radius: 15px;
+    }
+    body.lang-ar table.data-table thead th:last-child {
+      border-top-right-radius: 0;
+      border-top-left-radius: 15px;
+      border-left: none;
+    }
+
+    table.data-table td {
+      padding: 8px 12px;
+      height: var(--row-height);
+      border-bottom: 1px solid var(--color-border-subtle);
+      border-right: 1px solid var(--color-border-col);
+      vertical-align: middle;
+      font-size: 12px;
+      font-weight: 500;
+      background: #FFFFFF;
+      transition: background 0.1s;
+    }
+    body.lang-ar table.data-table td {
+      border-right: none;
+      border-left: 1px solid var(--color-border-col);
+    }
+    table.data-table td:last-child {
+      border-right: none;
+      border-left: none;
+    }
+    table.data-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    /* Badges */
+    .pill-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      padding: 2px 6px;
+      border-radius: 9999px;
+      border-width: 1px;
+      border-style: solid;
+      white-space: nowrap;
+    }
+    .badge-blue { background: #F0F7FF; border-color: #BFDBFE; color: #2563EB; }
+    .badge-green { background: #F0FDF4; border-color: #BBF7D0; color: #16A34A; }
+    .badge-orange { background: #FFF7ED; border-color: #FED7AA; color: #EA580C; }
+    .badge-purple { background: #F5F3FF; border-color: #DDD6FE; color: #7C3AED; }
+    .dot-inner { width: 4px; height: 4px; border-radius: 50%; }
+    .badge-blue .dot-inner { background: #2563EB; }
+    .badge-green .dot-inner { background: #16A34A; }
+    .badge-orange .dot-inner { background: #EA580C; }
+    .badge-purple .dot-inner { background: #7C3AED; }
+
+    .approver-avatar {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: #E5E7EB;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #9CA3AF;
+      flex-shrink: 0;
+    }
+    .approver-name-lines {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.25;
+      font-size: 11px;
+      font-weight: 500;
+    }
+
+    .btn-quick-approve {
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      border: 1px solid #10B981;
+      background: #ECFDF5;
+      color: #047857;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn-quick-approve:hover {
+      background: #10B981;
+      color: #FFFFFF;
+    }
+    .btn-quick-view {
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 500;
+      border: 1px solid #E5E7EB;
+      background: #FFFFFF;
+      color: #374151;
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .btn-quick-view:hover {
+      background: #F9FAFB;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #12161E;
+      color: #FFFFFF;
+      padding: 9px 16px;
+      border-radius: 8px;
+      font-size: 12px;
+      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      gap: 8px;
+    }
+    body.lang-ar .toast {
+      right: auto;
+      left: 20px;
+    }
+
+    /* Mobile Drawer */
+    .sidebar-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(18, 22, 30, 0.4);
+      backdrop-filter: blur(2px);
+      z-index: 80;
+    }
+    @media (max-width: 1024px) {
+      aside.sidebar {
+        position: fixed;
+        top: 3px;
+        left: 0;
+        bottom: 0;
+        z-index: 100;
+        transform: translateX(-100%);
+        box-shadow: 4px 0 24px rgba(0, 0, 0, 0.12);
+      }
+      aside.sidebar.drawer-open {
+        transform: translateX(0);
+      }
+      body.lang-ar aside.sidebar {
+        left: auto;
+        right: 0;
+        transform: translateX(100%);
+      }
+      body.lang-ar aside.sidebar.drawer-open {
+        transform: translateX(0);
+      }
+      .sidebar-backdrop.active {
+        display: block;
+      }
+      .mobile-menu-btn {
+        display: flex;
+      }
+      .header-bar {
+        padding: 0 20px;
+      }
+      .scroll-container {
+        padding: 20px 20px 48px 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Thin Black Line -->
+  <div class="top-black-bar"></div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="toast">Action completed successfully</div>
+
+  <!-- Mobile Drawer Backdrop -->
+  <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="closeSidebarDrawer()"></div>
+
+  <div class="app-layout">
+    
+    <!-- Left Sidebar: Pinned -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <a href="dashboard.html" class="logo-container">
+          <div class="logo-icon">
+            <svg width="24" height="24" viewBox="0 0 32 32" fill="none" stroke="#12161E" stroke-width="2.5" stroke-linecap="round">
+              <path d="M16 4C9.37 4 4 9.37 4 16c0 6.63 5.37 12 12 12s12-5.37 12-12"></path>
+              <path d="M16 10a6 6 0 1 0 6 6"></path>
+              <circle cx="16" cy="16" r="2" fill="#12161E"></circle>
+            </svg>
+          </div>
+          <span class="logo-text" data-i18n="grok">Grok</span>
+        </a>
+        <button class="collapse-btn" title="Collapse sidebar" onclick="toggleSidebarCollapse()">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="11 17 6 12 11 7"></polyline><polyline points="18 17 13 12 18 7"></polyline></svg>
+        </button>
+      </div>
+
+      <nav class="sidebar-nav">
+        <!-- Section: HR MANAGEMENT -->
+        <div class="nav-section">
+          <div class="nav-section-title">
+            <span data-i18n="hr_management">HR MANAGEMENT</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </div>
+          <!-- Active Item: Dashboard -->
+          <a href="dashboard.html" class="nav-item active">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+            <span data-i18n="dashboard">Dashboard</span>
+            <svg class="cursor-pointer-badge" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M10 2a2 2 0 0 0-2 2v6.6a2 2 0 0 0-.6 1.4v4a5 5 0 0 0 5 5h3a5 5 0 0 0 5-5v-5a2 2 0 0 0-2-2h-1v-1a2 2 0 0 0-2-2h-1V4a2 2 0 0 0-2-2h-2.4z" fill="#9CA3AF"/>
+            </svg>
+          </a>
+          <a href="users.html" class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            <span data-i18n="user">User</span>
+          </a>
+          <a href="index.html" class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="14" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect></svg>
+            <span data-i18n="requests">Requests</span>
+          </a>
+          <a class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+            <span data-i18n="tasks">Tasks</span>
+          </a>
+        </div>
+
+        <!-- Section: TIME & SCHEDULING -->
+        <div class="nav-section">
+          <div class="nav-section-title">
+            <span data-i18n="time_scheduling">TIME & SCHEDULING</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </div>
+          <a href="shifts.html" class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            <span data-i18n="shifts">Shifts</span>
+          </a>
+          <a class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+            <span data-i18n="scheduler">Scheduler</span>
+          </a>
+          <a class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+            <span data-i18n="attendance">Attendance</span>
+          </a>
+          <a class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"></rect><circle cx="12" cy="13" r="2"></circle><line x1="12" y1="9" x2="12" y2="9.5"></line></svg>
+            <span data-i18n="attendance_clarification">Attendance clarification</span>
+          </a>
+          <a class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2v20M2 12h20"></path></svg>
+            <span data-i18n="medical_maintenance">Medical maintenance</span>
+          </a>
+        </div>
+
+        <!-- Section: PAYROLL & FINANCE -->
+        <div class="nav-section">
+          <div class="nav-section-title">
+            <span data-i18n="payroll_finance">PAYROLL & FINANCE</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </div>
+          <a class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+            <span data-i18n="payroll">Payroll</span>
+          </a>
+          <a class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+            <span data-i18n="employee_benefits">Employee benefits</span>
+          </a>
+          <a class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="6" width="20" height="12" rx="2"></rect><circle cx="12" cy="12" r="2"></circle></svg>
+            <span data-i18n="salaries">Salaries</span>
+          </a>
+          <a class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="3" y1="21" x2="21" y2="21"></line><line x1="3" y1="10" x2="21" y2="10"></line><polyline points="5 6 12 3 19 6"></polyline><line x1="4" y1="10" x2="4" y2="21"></line><line x1="20" y1="10" x2="20" y2="21"></line></svg>
+            <span data-i18n="loans">Loans</span>
+          </a>
+        </div>
+      </nav>
+    </aside>
+
+    <!-- Main Panel -->
+    <main class="main-panel">
+      
+      <!-- Pinned Header -->
+      <div class="header-bar">
+        <div class="header-left-group">
+          <button class="mobile-menu-btn" onclick="openSidebarDrawer()" title="Open Navigation Menu">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+          </button>
+          
+          <div class="breadcrumb">
+            <svg class="device-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="3" width="20" height="14" rx="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+            <span class="chevron">›</span>
+            <a href="#" data-i18n="hr_management_upper">HR MANAGEMENT</a>
+            <span class="chevron">›</span>
+            <span class="current" data-i18n="dashboard_upper">DASHBOARD</span>
+          </div>
+        </div>
+
+        <div class="header-right">
+          <!-- Translation Toggle -->
+          <button class="header-icon-btn" title="Toggle Language (English / Arabic)" onclick="toggleLanguage()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 8l6 6M4 14h7M2 5h12M7 2v3M22 22l-5-10-5 10M14 18h6"></path></svg>
+          </button>
+
+          <!-- Notifications -->
+          <button class="header-icon-btn" title="Notifications">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+            <span class="badge-dot"></span>
+          </button>
+
+          <!-- Theme -->
+          <button class="header-icon-btn" title="Theme">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 15 15"></polyline></svg>
+          </button>
+
+          <!-- User Block -->
+          <div class="user-block">
+            <img class="user-avatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&h=120&q=80" alt="Ozeer Ahmed">
+            <div class="user-info">
+              <span class="user-name" data-i18n="user_name">Ozeer Ahmed</span>
+              <span class="user-email">ozeer.92@yahoo.com</span>
+            </div>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6B7280" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Scroll Container (56px margin) -->
+      <div class="scroll-container" id="mainScrollContainer">
+        
+        <!-- Page Title & Actions -->
+        <div class="page-header">
+          <div class="page-title-box">
+            <h1 data-i18n="dash_title">HR Dashboard</h1>
+            <p data-i18n="dash_subtitle">Real-time workforce overview, attendance metrics, and operational approvals.</p>
+          </div>
+          <div class="page-actions">
+            <button class="btn btn-export" onclick="showToast('Exporting dashboard report...')">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+              <span data-i18n="export_report">Export Report</span>
+            </button>
+            <button class="btn btn-create" onclick="showToast('Opening employee onboarding modal...')">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+              <span data-i18n="add_employee">+ Add Employee</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Sub Tabs -->
+        <div class="subtabs-container">
+          <button class="subtab-btn active" data-i18n="tab_overview" onclick="switchSubTab(this)">Overview</button>
+          <button class="subtab-btn" data-i18n="tab_workforce" onclick="switchSubTab(this)">Workforce Analytics</button>
+          <button class="subtab-btn" data-i18n="tab_attendance" onclick="switchSubTab(this)">Attendance & Shifts</button>
+          <button class="subtab-btn" data-i18n="tab_payroll" onclick="switchSubTab(this)">Payroll Summary</button>
+        </div>
+
+        <!-- 4 Metric Cards -->
+        <div class="stat-cards-grid">
+          <!-- Card 1 -->
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <span class="stat-card-label" data-i18n="card1_label">TOTAL EMPLOYEES</span>
+              <div class="stat-icon-chip chip-blue">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+              </div>
+            </div>
+            <div class="stat-card-value" data-i18n="card1_val">1,284</div>
+            <div class="stat-card-sub">
+              <span class="trend-up">↑ +3.2%</span>
+              <span data-i18n="card1_sub">38 new hires this month</span>
+            </div>
+          </div>
+
+          <!-- Card 2 -->
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <span class="stat-card-label" data-i18n="card2_label">ON LEAVE TODAY</span>
+              <div class="stat-icon-chip chip-green">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line><polyline points="9 16 11 18 15 14"></polyline></svg>
+              </div>
+            </div>
+            <div class="stat-card-value" data-i18n="card2_val">28</div>
+            <div class="stat-card-sub" data-i18n="card2_sub">16 Sick · 8 Annual · 4 Remote</div>
+          </div>
+
+          <!-- Card 3 -->
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <span class="stat-card-label" data-i18n="card3_label">PENDING APPROVALS</span>
+              <div class="stat-icon-chip chip-orange">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+              </div>
+            </div>
+            <div class="stat-card-value" data-i18n="card3_val">14</div>
+            <div class="stat-card-sub" data-i18n="card3_sub">6 Requests · 8 Shift changes</div>
+          </div>
+
+          <!-- Card 4 -->
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <span class="stat-card-label" data-i18n="card4_label">PAYROLL RUN HEALTH</span>
+              <div class="stat-icon-chip chip-purple">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>
+              </div>
+            </div>
+            <div class="stat-card-value" data-i18n="card4_val">99.4%</div>
+            <div class="stat-card-sub" data-i18n="card4_sub">Next cycle in 5 days (Nov 15)</div>
+          </div>
+        </div>
+
+        <!-- Middle Section: 2 Column Grid -->
+        <div class="dashboard-grid">
+          
+          <!-- Left Column (65%): Attendance Bar Chart + Approval Queue Table -->
+          <div style="display: flex; flex-direction: column; gap: 18px;">
+            
+            <!-- Weekly Attendance Trends Widget -->
+            <div class="widget-card">
+              <div class="widget-header">
+                <div class="widget-title-group">
+                  <h2 data-i18n="chart_title">Weekly Attendance Trends</h2>
+                  <p data-i18n="chart_sub">Average 96.2% workforce presence across all departments</p>
+                </div>
+                <div class="widget-legend">
+                  <div class="legend-item">
+                    <span class="legend-dot dot-present"></span>
+                    <span data-i18n="leg_present">Present</span>
+                  </div>
+                  <div class="legend-item">
+                    <span class="legend-dot dot-remote"></span>
+                    <span data-i18n="leg_remote">Remote</span>
+                  </div>
+                  <div class="legend-item">
+                    <span class="legend-dot dot-leave"></span>
+                    <span data-i18n="leg_leave">Leave</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Bar Chart -->
+              <div class="chart-container">
+                <div class="bar-chart-row">
+                  <!-- Mon -->
+                  <div class="chart-column" onclick="showToast('Mon: 98.4% Present, 1.2% Remote, 0.4% Leave')">
+                    <div class="bar-stack" style="height: 124px;">
+                      <div class="bar-segment-present" style="height: 85%;"></div>
+                      <div class="bar-segment-remote" style="height: 10%;"></div>
+                      <div class="bar-segment-leave" style="height: 5%;"></div>
+                    </div>
+                    <span class="chart-metric-pct">98.4%</span>
+                    <span class="chart-label" data-i18n="day_mon">Mon</span>
+                  </div>
+
+                  <!-- Tue -->
+                  <div class="chart-column" onclick="showToast('Tue: 97.1% Present, 2.0% Remote, 0.9% Leave')">
+                    <div class="bar-stack" style="height: 118px;">
+                      <div class="bar-segment-present" style="height: 82%;"></div>
+                      <div class="bar-segment-remote" style="height: 12%;"></div>
+                      <div class="bar-segment-leave" style="height: 6%;"></div>
+                    </div>
+                    <span class="chart-metric-pct">97.1%</span>
+                    <span class="chart-label" data-i18n="day_tue">Tue</span>
+                  </div>
+
+                  <!-- Wed -->
+                  <div class="chart-column" onclick="showToast('Wed: 95.8% Present, 3.2% Remote, 1.0% Leave')">
+                    <div class="bar-stack" style="height: 110px;">
+                      <div class="bar-segment-present" style="height: 78%;"></div>
+                      <div class="bar-segment-remote" style="height: 15%;"></div>
+                      <div class="bar-segment-leave" style="height: 7%;"></div>
+                    </div>
+                    <span class="chart-metric-pct">95.8%</span>
+                    <span class="chart-label" data-i18n="day_wed">Wed</span>
+                  </div>
+
+                  <!-- Thu -->
+                  <div class="chart-column" onclick="showToast('Thu: 96.9% Present, 2.1% Remote, 1.0% Leave')">
+                    <div class="bar-stack" style="height: 115px;">
+                      <div class="bar-segment-present" style="height: 80%;"></div>
+                      <div class="bar-segment-remote" style="height: 14%;"></div>
+                      <div class="bar-segment-leave" style="height: 6%;"></div>
+                    </div>
+                    <span class="chart-metric-pct">96.9%</span>
+                    <span class="chart-label" data-i18n="day_thu">Thu</span>
+                  </div>
+
+                  <!-- Fri -->
+                  <div class="chart-column" onclick="showToast('Fri: 94.2% Present, 4.5% Remote, 1.3% Leave')">
+                    <div class="bar-stack" style="height: 104px;">
+                      <div class="bar-segment-present" style="height: 74%;"></div>
+                      <div class="bar-segment-remote" style="height: 18%;"></div>
+                      <div class="bar-segment-leave" style="height: 8%;"></div>
+                    </div>
+                    <span class="chart-metric-pct">94.2%</span>
+                    <span class="chart-label" data-i18n="day_fri">Fri</span>
+                  </div>
+
+                  <!-- Sat -->
+                  <div class="chart-column" onclick="showToast('Sat: 88.0% Present (Weekend Shifts)')">
+                    <div class="bar-stack" style="height: 82px;">
+                      <div class="bar-segment-present" style="height: 88%;"></div>
+                      <div class="bar-segment-remote" style="height: 6%;"></div>
+                      <div class="bar-segment-leave" style="height: 6%;"></div>
+                    </div>
+                    <span class="chart-metric-pct">88.0%</span>
+                    <span class="chart-label" data-i18n="day_sat">Sat</span>
+                  </div>
+
+                  <!-- Sun -->
+                  <div class="chart-column" onclick="showToast('Sun: 89.5% Present (Weekend Shifts)')">
+                    <div class="bar-stack" style="height: 85px;">
+                      <div class="bar-segment-present" style="height: 89%;"></div>
+                      <div class="bar-segment-remote" style="height: 5%;"></div>
+                      <div class="bar-segment-leave" style="height: 6%;"></div>
+                    </div>
+                    <span class="chart-metric-pct">89.5%</span>
+                    <span class="chart-label" data-i18n="day_sun">Sun</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Urgent Approvals Queue Table -->
+            <div class="widget-card" style="padding: 16px 18px;">
+              <div class="widget-header" style="margin-bottom: 10px;">
+                <div class="widget-title-group">
+                  <h2 data-i18n="queue_title">Urgent Approvals Queue</h2>
+                  <p data-i18n="queue_sub">Requests awaiting review from team leads & management</p>
+                </div>
+                <a href="index.html" class="btn btn-export" style="font-size: 11px; height: 30px; padding: 0 10px;" data-i18n="view_all_requests">View All Requests →</a>
+              </div>
+
+              <!-- Table with exact styling -->
+              <div class="table-card">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th><span data-i18n="th_id">ID</span></th>
+                      <th><span data-i18n="th_details">REQUEST DETAILS</span></th>
+                      <th><span data-i18n="th_approver">APPROVER</span></th>
+                      <th><span data-i18n="th_status">STATUS</span></th>
+                      <th><span data-i18n="th_actions">ACTIONS</span></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><span style="font-weight: 600; color: #12161E;">ARKs1igzRC</span></td>
+                      <td>
+                        <div style="display: flex; gap: 4px; align-items: center;">
+                          <span class="pill-badge badge-blue"><span class="dot-inner"></span>LEAVE</span>
+                          <span class="pill-badge badge-green"><span class="dot-inner"></span>SICK</span>
+                        </div>
+                      </td>
+                      <td>
+                        <div style="display: flex; align-items: center; gap: 7px;">
+                          <div class="approver-avatar">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                          </div>
+                          <div class="approver-name-lines">
+                            <span>Saeed</span>
+                            <span style="color: #8E95A2;">Al-Mutairi</span>
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <div style="display: flex; align-items: center; gap: 5px; font-size: 11px;">
+                          <span style="width: 6px; height: 6px; border-radius: 50%; background: #F59E0B;"></span>
+                          <span data-i18n="status_requested">Requested</span>
+                        </div>
+                      </td>
+                      <td>
+                        <div style="display: flex; gap: 6px;">
+                          <button class="btn-quick-approve" onclick="showToast('Approved ARKs1igzRC')">Approve</button>
+                          <a href="index.html" class="btn-quick-view">View</a>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td><span style="font-weight: 600; color: #12161E;">CRUy4kfNZA</span></td>
+                      <td>
+                        <div style="display: flex; gap: 4px; align-items: center;">
+                          <span class="pill-badge badge-blue"><span class="dot-inner"></span>LEAVE</span>
+                          <span class="pill-badge badge-green"><span class="dot-inner"></span>BEREAVEMENT</span>
+                        </div>
+                      </td>
+                      <td>
+                        <div style="display: flex; align-items: center; gap: 7px;">
+                          <div class="approver-avatar">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                          </div>
+                          <div class="approver-name-lines">
+                            <span>Ahmad</span>
+                            <span style="color: #8E95A2;">Al-Mansour</span>
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <div style="display: flex; align-items: center; gap: 5px; font-size: 11px;">
+                          <span style="width: 6px; height: 6px; border-radius: 50%; background: #F59E0B;"></span>
+                          <span data-i18n="status_requested">Requested</span>
+                        </div>
+                      </td>
+                      <td>
+                        <div style="display: flex; gap: 6px;">
+                          <button class="btn-quick-approve" onclick="showToast('Approved CRUy4kfNZA')">Approve</button>
+                          <a href="index.html" class="btn-quick-view">View</a>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td><span style="font-weight: 600; color: #12161E;">ETRq7mHsUV</span></td>
+                      <td>
+                        <div style="display: flex; gap: 4px; align-items: center;">
+                          <span class="pill-badge badge-blue"><span class="dot-inner"></span>EXCUSE</span>
+                          <span class="pill-badge badge-orange"><span class="dot-inner"></span>FULL DAY</span>
+                        </div>
+                      </td>
+                      <td>
+                        <div style="display: flex; align-items: center; gap: 7px;">
+                          <div class="approver-avatar">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                          </div>
+                          <div class="approver-name-lines">
+                            <span>Faisal</span>
+                            <span style="color: #8E95A2;">Al-Juhani</span>
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <div style="display: flex; align-items: center; gap: 5px; font-size: 11px;">
+                          <span style="width: 6px; height: 6px; border-radius: 50%; background: #F59E0B;"></span>
+                          <span data-i18n="status_requested">Requested</span>
+                        </div>
+                      </td>
+                      <td>
+                        <div style="display: flex; gap: 6px;">
+                          <button class="btn-quick-approve" onclick="showToast('Approved ETRq7mHsUV')">Approve</button>
+                          <a href="index.html" class="btn-quick-view">View</a>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Right Column (35%): Headcount Breakdown + HR Action Checklist -->
+          <div style="display: flex; flex-direction: column; gap: 18px;">
+            
+            <!-- Department Headcount Breakdown -->
+            <div class="widget-card">
+              <div class="widget-header">
+                <div class="widget-title-group">
+                  <h2 data-i18n="dept_title">Department Distribution</h2>
+                  <p data-i18n="dept_sub">Headcount breakdown across 4 primary units</p>
+                </div>
+              </div>
+
+              <div class="dept-list">
+                <!-- Dept 1 -->
+                <div class="dept-item">
+                  <div class="dept-item-top">
+                    <span class="dept-name" data-i18n="dept_tech">Engineering & Product</span>
+                    <span class="dept-count"><strong>540</strong> (42%)</span>
+                  </div>
+                  <div class="progress-bar-bg">
+                    <div class="progress-bar-fill fill-tech"></div>
+                  </div>
+                </div>
+
+                <!-- Dept 2 -->
+                <div class="dept-item">
+                  <div class="dept-item-top">
+                    <span class="dept-name" data-i18n="dept_ops">Operations & Logistics</span>
+                    <span class="dept-count"><strong>310</strong> (24%)</span>
+                  </div>
+                  <div class="progress-bar-bg">
+                    <div class="progress-bar-fill fill-ops"></div>
+                  </div>
+                </div>
+
+                <!-- Dept 3 -->
+                <div class="dept-item">
+                  <div class="dept-item-top">
+                    <span class="dept-name" data-i18n="dept_design">Sales & Client Relations</span>
+                    <span class="dept-count"><strong>230</strong> (18%)</span>
+                  </div>
+                  <div class="progress-bar-bg">
+                    <div class="progress-bar-fill fill-prod"></div>
+                  </div>
+                </div>
+
+                <!-- Dept 4 -->
+                <div class="dept-item">
+                  <div class="dept-item-top">
+                    <span class="dept-name" data-i18n="dept_mkt">Corporate HR & Finance</span>
+                    <span class="dept-count"><strong>204</strong> (16%)</span>
+                  </div>
+                  <div class="progress-bar-bg">
+                    <div class="progress-bar-fill fill-mkt"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- HR Action Items & Deadlines -->
+            <div class="widget-card">
+              <div class="widget-header">
+                <div class="widget-title-group">
+                  <h2 data-i18n="todo_title">Today's HR Action Items</h2>
+                  <p data-i18n="todo_sub">3 high-priority tasks requiring completion</p>
+                </div>
+              </div>
+
+              <div class="action-items-list">
+                <!-- Item 1 -->
+                <div class="action-item-card">
+                  <input type="checkbox" style="margin-top: 3px; cursor: pointer;">
+                  <div class="action-item-text">
+                    <span class="action-item-title" data-i18n="item1_title">Review 4 probation period renewals</span>
+                    <span class="action-item-meta">
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                      <span data-i18n="due_today_5pm">Due today, 5:00 PM</span>
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Item 2 -->
+                <div class="action-item-card">
+                  <input type="checkbox" style="margin-top: 3px; cursor: pointer;">
+                  <div class="action-item-text">
+                    <span class="action-item-title" data-i18n="item2_title">Audit Q4 health insurance tier updates</span>
+                    <span class="action-item-meta">
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line></svg>
+                      <span data-i18n="benefits_committee">Benefits Committee</span>
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Item 3 -->
+                <div class="action-item-card">
+                  <input type="checkbox" style="margin-top: 3px; cursor: pointer;">
+                  <div class="action-item-text">
+                    <span class="action-item-title" data-i18n="item3_title">Sign off on mid-month salary adjustments</span>
+                    <span class="action-item-meta">
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                      <span data-i18n="batch_payroll">Batch #2026-11</span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // Bilingual Localization Dictionary (English & Arabic)
+    const translations = {
+      en: {
+        grok: "Grok",
+        hr_management: "HR MANAGEMENT",
+        hr_management_upper: "HR MANAGEMENT",
+        dashboard_upper: "DASHBOARD",
+        dashboard: "Dashboard",
+        user: "User",
+        requests: "Requests",
+        tasks: "Tasks",
+        time_scheduling: "TIME & SCHEDULING",
+        shifts: "Shifts",
+        scheduler: "Scheduler",
+        attendance: "Attendance",
+        attendance_clarification: "Attendance clarification",
+        medical_maintenance: "Medical maintenance",
+        payroll_finance: "PAYROLL & FINANCE",
+        payroll: "Payroll",
+        employee_benefits: "Employee benefits",
+        salaries: "Salaries",
+        loans: "Loans",
+        user_name: "Ozeer Ahmed",
+        dash_title: "HR Dashboard",
+        dash_subtitle: "Real-time workforce overview, attendance metrics, and operational approvals.",
+        export_report: "Export Report",
+        add_employee: "+ Add Employee",
+        tab_overview: "Overview",
+        tab_workforce: "Workforce Analytics",
+        tab_attendance: "Attendance & Shifts",
+        tab_payroll: "Payroll Summary",
+        card1_label: "TOTAL EMPLOYEES",
+        card1_val: "1,284",
+        card1_sub: "38 new hires this month",
+        card2_label: "ON LEAVE TODAY",
+        card2_val: "28",
+        card2_sub: "16 Sick · 8 Annual · 4 Remote",
+        card3_label: "PENDING APPROVALS",
+        card3_val: "14",
+        card3_sub: "6 Requests · 8 Shift changes",
+        card4_label: "PAYROLL RUN HEALTH",
+        card4_val: "99.4%",
+        card4_sub: "Next cycle in 5 days (Nov 15)",
+        chart_title: "Weekly Attendance Trends",
+        chart_sub: "Average 96.2% workforce presence across all departments",
+        leg_present: "Present",
+        leg_remote: "Remote",
+        leg_leave: "Leave",
+        day_mon: "Mon",
+        day_tue: "Tue",
+        day_wed: "Wed",
+        day_thu: "Thu",
+        day_fri: "Fri",
+        day_sat: "Sat",
+        day_sun: "Sun",
+        queue_title: "Urgent Approvals Queue",
+        queue_sub: "Requests awaiting review from team leads & management",
+        view_all_requests: "View All Requests →",
+        dept_title: "Department Distribution",
+        dept_sub: "Headcount breakdown across 4 primary units",
+        dept_tech: "Engineering & Product",
+        dept_ops: "Operations & Logistics",
+        dept_design: "Sales & Client Relations",
+        dept_mkt: "Corporate HR & Finance",
+        todo_title: "Today's HR Action Items",
+        todo_sub: "3 high-priority tasks requiring completion",
+        item1_title: "Review 4 probation period renewals",
+        item2_title: "Audit Q4 health insurance tier updates",
+        item3_title: "Sign off on mid-month salary adjustments",
+        due_today_5pm: "Due today, 5:00 PM",
+        benefits_committee: "Benefits Committee",
+        batch_payroll: "Batch #2026-11",
+        th_id: "ID",
+        th_details: "REQUEST DETAILS",
+        th_approver: "APPROVER",
+        th_status: "STATUS",
+        th_actions: "ACTIONS",
+        status_requested: "Requested"
+      },
+      ar: {
+        grok: "جروك",
+        hr_management: "إدارة الموارد البشرية",
+        hr_management_upper: "إدارة الموارد البشرية",
+        dashboard_upper: "لوحة التحكم",
+        dashboard: "لوحة التحكم",
+        user: "المستخدمون",
+        requests: "الطلبات",
+        tasks: "المهام",
+        time_scheduling: "الوقت والجدولة",
+        shifts: "المناوبات",
+        scheduler: "المجدول",
+        attendance: "الحضور والانصراف",
+        attendance_clarification: "توضيح الحضور",
+        medical_maintenance: "الصيانة الطبية",
+        payroll_finance: "الرواتب والمالية",
+        payroll: "مسير الرواتب",
+        employee_benefits: "مزايا الموظفين",
+        salaries: "الرواتب",
+        loans: "القروض",
+        user_name: "أوزير أحمد",
+        dash_title: "لوحة تحكم الموارد البشرية",
+        dash_subtitle: "نظرة عامة على القوى العاملة، ومؤشرات الحضور، والموافقات التشغيلية.",
+        export_report: "تصدير التقرير",
+        add_employee: "+ إضافة موظف",
+        tab_overview: "نظرة عامة",
+        tab_workforce: "تحليلات الموظفين",
+        tab_attendance: "الحضور والمناوبات",
+        tab_payroll: "ملخص الرواتب",
+        card1_label: "إجمالي الموظفين",
+        card1_val: "١,٢٨٤",
+        card1_sub: "٣٨ موظفاً جديداً هذا الشهر",
+        card2_label: "في إجازة اليوم",
+        card2_val: "٢٨",
+        card2_sub: "١٦ مرضية · ٨ سنوية · ٤ عن بعد",
+        card3_label: "بانتظار الموافقة",
+        card3_val: "١٤",
+        card3_sub: "٦ طلبات · ٨ تغييرات مناوبة",
+        card4_label: "سلامة مسير الرواتب",
+        card4_val: "٩٩.٤%",
+        card4_sub: "الدورة القادمة خلال ٥ أيام (١٥ نوفمبر)",
+        chart_title: "اتجاهات الحضور الأسبوعية",
+        chart_sub: "متوسط نسبة حضور ٩٦.٢% عبر جميع الأقسام",
+        leg_present: "حاضر",
+        leg_remote: "عن بعد",
+        leg_leave: "إجازة",
+        day_mon: "الإثنين",
+        day_tue: "الثلاثاء",
+        day_wed: "الأربعاء",
+        day_thu: "الخميس",
+        day_fri: "الجمعة",
+        day_sat: "السبت",
+        day_sun: "الأحد",
+        queue_title: "قائمة الموافقات العاجلة",
+        queue_sub: "طلبات بانتظار مراجعة قادة الفرق والإدارة",
+        view_all_requests: "عرض جميع الطلبات ←",
+        dept_title: "توزيع الأقسام",
+        dept_sub: "توزيع الموظفين عبر ٤ وحدات أساسية",
+        dept_tech: "الهندسة والمنتج",
+        dept_ops: "العمليات واللوجستيات",
+        dept_design: "المبيعات وعلاقات العملاء",
+        dept_mkt: "الموارد البشرية والمالية",
+        todo_title: "مهام اليوم للموارد البشرية",
+        todo_sub: "٣ مهام ذات أولوية عالية تتطلب الإنجاز",
+        item1_title: "مراجعة ٤ تجديدات لفترات التجربة",
+        item2_title: "تدقيق تحديثات التأمين الصحي للربع الرابع",
+        item3_title: "اعتماد تعديلات رواتب منتصف الشهر",
+        due_today_5pm: "الموعد اليوم، ٥:٠٠ مساءً",
+        benefits_committee: "لجنة المزايا",
+        batch_payroll: "دفعة #2026-11",
+        th_id: "المعرّف",
+        th_details: "تفاصيل الطلب",
+        th_approver: "المعتمد",
+        th_status: "الحالة",
+        th_actions: "الإجراءات",
+        status_requested: "تم الطلب"
+      }
+    };
+
+    let currentLang = 'en';
+
+    function switchLanguage(lang) {
+      currentLang = lang;
+      const html = document.documentElement;
+      const body = document.body;
+
+      if (lang === 'ar') {
+        html.setAttribute('lang', 'ar');
+        html.setAttribute('dir', 'rtl');
+        body.setAttribute('dir', 'rtl');
+        body.classList.add('lang-ar');
+      } else {
+        html.setAttribute('lang', 'en');
+        html.setAttribute('dir', 'ltr');
+        body.setAttribute('dir', 'ltr');
+        body.classList.remove('lang-ar');
+      }
+
+      // Update static text elements
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (translations[lang][key]) {
+          el.textContent = translations[lang][key];
+        }
+      });
+    }
+
+    function toggleLanguage() {
+      switchLanguage(currentLang === 'en' ? 'ar' : 'en');
+    }
+
+    function switchSubTab(btn) {
+      document.querySelectorAll('.subtab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    }
+
+    function toggleSidebarCollapse() {
+      const sidebar = document.getElementById('sidebar');
+      sidebar.classList.toggle('collapsed');
+    }
+
+    function openSidebarDrawer() {
+      document.getElementById('sidebar').classList.add('drawer-open');
+      document.getElementById('sidebarBackdrop').classList.add('active');
+    }
+
+    function closeSidebarDrawer() {
+      document.getElementById('sidebar').classList.remove('drawer-open');
+      document.getElementById('sidebarBackdrop').classList.remove('active');
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.style.display = 'flex';
+      clearTimeout(window.toastTimer);
+      window.toastTimer = setTimeout(() => {
+        toast.style.display = 'none';
+      }, 2500);
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,2209 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Grok HR Management - My Requests</title>
+
+  <!-- Google Fonts Preconnect and Fallback CDN -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Noto+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* Self-hosted @font-face definitions for 100% reliable local offline loading */
+    @font-face {
+      font-family: 'Bricolage Grotesque';
+      font-style: normal;
+      font-weight: 400 700;
+      font-display: swap;
+      src: url('fonts/bricolage-grotesque.woff2') format('woff2');
+    }
+    @font-face {
+      font-family: 'IBM Plex Sans Arabic';
+      font-style: normal;
+      font-weight: 400;
+      font-display: swap;
+      src: url('fonts/ibm-plex-sans-arabic-400.woff2') format('woff2');
+    }
+    @font-face {
+      font-family: 'IBM Plex Sans Arabic';
+      font-style: normal;
+      font-weight: 600;
+      font-display: swap;
+      src: url('fonts/ibm-plex-sans-arabic-600.woff2') format('woff2');
+    }
+    @font-face {
+      font-family: 'IBM Plex Sans Arabic';
+      font-style: normal;
+      font-weight: 700;
+      font-display: swap;
+      src: url('fonts/ibm-plex-sans-arabic-700.woff2') format('woff2');
+    }
+
+    /* Design Tokens */
+    :root {
+      --font-sans: 'Bricolage Grotesque', sans-serif;
+      --font-arabic: 'IBM Plex Sans Arabic', 'Noto Sans Arabic', sans-serif;
+      
+      --color-sidebar: #F5F4F0;
+      --color-main-bg: #FFFFFF;
+      --color-stat-card: #FAF9F7;
+      --color-border-card: #E8E6E1;
+      --color-border-table: #ECEAE5;
+      --color-border-subtle: #F0EEE9;
+      --color-border-header: #EDEBE6;
+      --color-border-col: #F0F2F5;
+      --color-text-primary: #12161E;
+      --color-text-secondary: #5F6774;
+      --color-text-muted: #8E95A2;
+      --color-black: #12161E;
+      --color-black-hover: #222733;
+
+      --sidebar-width: 230px;
+      --sidebar-collapsed-width: 68px;
+      --radius-panel: 16px;
+      --radius-table: 16px;
+      --radius-card: 12px;
+      --row-height: 64px;
+      --page-margin: 56px;
+    }
+
+    /* Universal Font Enforcement - No system fonts anywhere */
+    *, *::before, *::after,
+    html, body, button, input, select, textarea,
+    table, th, td, tr, .custom-tooltip,
+    .toast, .pagination-controls, .subtabs-container, .pill-badge, .custom-checkbox {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: var(--font-sans) !important;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Arabic Typography & RTL Enforcement */
+    body[dir="rtl"],
+    body[dir="rtl"] *,
+    body.lang-ar,
+    body.lang-ar *,
+    [lang="ar"],
+    [lang="ar"] * {
+      font-family: var(--font-arabic) !important;
+    }
+
+    /* 1. Page itself must NEVER scroll */
+    html, body {
+      height: 100dvh;
+      overflow: hidden;
+      margin: 0;
+      padding: 0;
+      background-color: var(--color-sidebar);
+      color: var(--color-text-primary);
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    /* Top thin black line */
+    .top-black-bar {
+      height: 3px;
+      width: 100%;
+      background-color: #12161E;
+      flex-shrink: 0;
+    }
+
+    /* 2. Root layout: Two-column shell (height: 100dvh) */
+    .app-layout {
+      display: flex;
+      height: calc(100dvh - 3px);
+      width: 100%;
+      background-color: var(--color-sidebar);
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Left: Sidebar (Fixed width ~230px, full height, NEVER scrolls with page) */
+    aside.sidebar {
+      width: var(--sidebar-width);
+      height: 100%;
+      flex-shrink: 0;
+      background-color: var(--color-sidebar);
+      display: flex;
+      flex-direction: column;
+      padding: 20px 14px 24px 18px;
+      user-select: none;
+      overflow: hidden;
+      position: relative;
+      transition: width 0.2s cubic-bezier(0.4, 0, 0.2, 1), transform 0.25s ease;
+      z-index: 40;
+    }
+    body.lang-ar aside.sidebar {
+      padding: 20px 18px 24px 14px;
+    }
+
+    /* Collapsed sidebar state */
+    aside.sidebar.collapsed {
+      width: var(--sidebar-collapsed-width);
+      padding: 20px 8px 24px 8px;
+    }
+    aside.sidebar.collapsed .logo-text,
+    aside.sidebar.collapsed .nav-section-title span,
+    aside.sidebar.collapsed .nav-item span,
+    aside.sidebar.collapsed .cursor-pointer-badge {
+      display: none !important;
+    }
+    aside.sidebar.collapsed .nav-section-title {
+      justify-content: center;
+      padding: 6px 0;
+    }
+    aside.sidebar.collapsed .nav-item {
+      justify-content: center;
+      padding: 9px 0;
+    }
+    aside.sidebar.collapsed .collapse-btn svg {
+      transform: rotate(180deg);
+    }
+    body.lang-ar aside.sidebar.collapsed .collapse-btn svg {
+      transform: rotate(0deg);
+    }
+
+    /* Sidebar Header: Logo pinned at top of sidebar */
+    .sidebar-header {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      padding-right: 6px;
+    }
+    body.lang-ar .sidebar-header {
+      padding-right: 0;
+      padding-left: 6px;
+    }
+
+    .logo-container {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      text-decoration: none;
+      color: var(--color-text-primary);
+    }
+    .logo-icon {
+      width: 26px;
+      height: 26px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .logo-text {
+      font-size: 19px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      white-space: nowrap;
+    }
+
+    .collapse-btn {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: 1px solid #E2E0DC;
+      background: #FFFFFF;
+      color: var(--color-text-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      flex-shrink: 0;
+    }
+    .collapse-btn:hover {
+      background: #FAF9F7;
+      color: var(--color-text-primary);
+    }
+    body.lang-ar .collapse-btn svg {
+      transform: rotate(180deg);
+    }
+
+    /* Only the nav list inside the sidebar scrolls (hidden scrollbar) */
+    .sidebar-nav {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      overflow-x: hidden;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .sidebar-nav::-webkit-scrollbar {
+      display: none;
+    }
+
+    .nav-section {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .nav-section-title {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      color: var(--color-text-muted);
+      text-transform: uppercase;
+      padding: 6px 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+    }
+    .nav-section-title svg {
+      width: 12px;
+      height: 12px;
+      stroke-width: 2;
+      color: var(--color-text-muted);
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      padding: 7px 11px;
+      border-radius: 9999px;
+      color: var(--color-text-secondary);
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.12s ease;
+      position: relative;
+      white-space: nowrap;
+    }
+    .nav-item:hover {
+      color: var(--color-text-primary);
+      background: rgba(255, 255, 255, 0.5);
+    }
+
+    /* Active Requests item: pill with soft shadow */
+    .nav-item.active {
+      background: #FFFFFF;
+      color: var(--color-text-primary);
+      font-weight: 600;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.02);
+    }
+    .nav-item svg {
+      width: 15px;
+      height: 15px;
+      stroke-width: 1.7;
+      color: #6B7280;
+      flex-shrink: 0;
+    }
+    .nav-item.active svg {
+      color: var(--color-text-primary);
+    }
+    .cursor-pointer-badge {
+      display: inline-flex;
+      position: absolute;
+      right: 12px;
+      width: 16px;
+      height: 16px;
+      opacity: 0.85;
+    }
+    body.lang-ar .cursor-pointer-badge {
+      right: auto;
+      left: 12px;
+      transform: scaleX(-1);
+    }
+
+    /* Right: White Main Panel (flex column, min-width: 0, height: 100%, rounded top-left corner ~16px) */
+    main.main-panel {
+      flex: 1;
+      min-width: 0;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      background-color: var(--color-main-bg);
+      border-top-left-radius: var(--radius-panel);
+      box-shadow: -2px 0 6px rgba(0, 0, 0, 0.02);
+      overflow: hidden;
+      position: relative;
+    }
+    body.lang-ar main.main-panel {
+      border-top-left-radius: 0;
+      border-top-right-radius: var(--radius-panel);
+      box-shadow: 2px 0 6px rgba(0, 0, 0, 0.02);
+    }
+
+    /* 3a. HEADER BAR: PINNED at top of the panel (does NOT scroll) */
+    .header-bar {
+      height: 60px;
+      flex-shrink: 0;
+      background-color: #FFFFFF;
+      border-bottom: 1px solid var(--color-border-header);
+      z-index: 30;
+      padding: 0 var(--page-margin);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+    }
+    .header-left-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .mobile-menu-btn {
+      display: none;
+      width: 32px;
+      height: 32px;
+      border: 1px solid #E5E7EB;
+      background: #FFFFFF;
+      border-radius: 6px;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: #374151;
+    }
+
+    .breadcrumb {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      letter-spacing: 0.05em;
+      font-weight: 600;
+      color: var(--color-text-muted);
+      text-transform: uppercase;
+    }
+    .breadcrumb svg.device-icon {
+      width: 16px;
+      height: 16px;
+      stroke-width: 1.8;
+      color: #4B5563;
+    }
+    .breadcrumb .chevron {
+      color: #9CA3AF;
+      font-size: 11px;
+    }
+    body.lang-ar .breadcrumb .chevron {
+      transform: rotate(180deg);
+    }
+    .breadcrumb a {
+      color: var(--color-text-secondary);
+      text-decoration: none;
+    }
+    .breadcrumb .current {
+      color: var(--color-text-primary);
+      font-weight: 700;
+      border-bottom: 1.5px solid var(--color-text-primary);
+      padding-bottom: 1px;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .header-icon-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: transparent;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #555E6D;
+      cursor: pointer;
+      position: relative;
+      transition: background 0.15s;
+    }
+    .header-icon-btn:hover {
+      background: #F4F2EE;
+      color: var(--color-text-primary);
+    }
+    .badge-dot {
+      position: absolute;
+      top: 6px;
+      right: 7px;
+      width: 6px;
+      height: 6px;
+      background: #EF4444;
+      border-radius: 50%;
+      border: 1px solid #FFFFFF;
+    }
+    body.lang-ar .badge-dot {
+      right: auto;
+      left: 7px;
+    }
+
+    .user-block {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 2px 6px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .user-block:hover {
+      background: #F4F2EE;
+    }
+    .user-avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 1px solid #E5E7EB;
+    }
+    .user-info {
+      display: flex;
+      flex-direction: column;
+    }
+    .user-name {
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--color-text-primary);
+      line-height: 1.2;
+    }
+    .user-email {
+      font-size: 11px;
+      color: var(--color-text-muted);
+    }
+
+    /* 3b. SCROLL CONTAINER below header: flex: 1, overflow-y: auto, slim scrollbar */
+    .scroll-container {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      overflow-x: hidden;
+      scrollbar-gutter: stable;
+      padding: 24px var(--page-margin) 56px var(--page-margin);
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      position: relative;
+    }
+    /* Slim, subtle custom scrollbar */
+    .scroll-container::-webkit-scrollbar {
+      width: 6px;
+    }
+    .scroll-container::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .scroll-container::-webkit-scrollbar-thumb {
+      background: #D8D6D1;
+      border-radius: 9999px;
+    }
+    .scroll-container::-webkit-scrollbar-thumb:hover {
+      background: #B4B1A9;
+    }
+
+    /* Page Header */
+    .page-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .page-title-box h1 {
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--color-text-primary);
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+      margin-bottom: 4px;
+    }
+    .page-title-box p {
+      font-size: 12.5px;
+      color: var(--color-text-secondary);
+    }
+    .page-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Buttons */
+    .btn {
+      height: 35px;
+      padding: 0 14px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      user-select: none;
+    }
+    .btn-export {
+      background: #FFFFFF;
+      border: 1px solid #E5E7EB;
+      color: #374151;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+    }
+    .btn-export:hover {
+      background: #FAF9F7;
+      border-color: #D3D0C9;
+    }
+    .btn-create {
+      background: linear-gradient(180deg, #22262F 0%, #12161E 100%);
+      border: 1px solid #12161E;
+      color: #FFFFFF;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+    }
+    .btn-create:hover {
+      background: #252A36;
+    }
+
+    /* Pill Tabs & Actions Row */
+    .tabs-and-toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 2px;
+    }
+    .subtabs-container {
+      display: inline-flex;
+      align-items: center;
+      background: #FFFFFF;
+      padding: 3px;
+      border-radius: 8px;
+      width: fit-content;
+      border: 1px solid #E5E7EB;
+    }
+    .subtab-btn {
+      border: none;
+      background: transparent;
+      padding: 5px 14px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--color-text-secondary);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .subtab-btn.active {
+      background: #12161E;
+      color: #FFFFFF;
+      font-weight: 600;
+    }
+
+    /* Collapsible Stat Cards Container */
+    .btn-toggle-metrics {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      height: 30px;
+      padding: 0 10px;
+      background: #FFFFFF;
+      border: 1px solid #E5E7EB;
+      border-radius: 6px;
+      font-size: 11.5px;
+      font-weight: 500;
+      color: #5F6774;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      user-select: none;
+    }
+    .btn-toggle-metrics:hover {
+      background: #FAF9F7;
+      border-color: #D3D0C9;
+      color: #12161E;
+    }
+    .btn-toggle-metrics svg {
+      transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .btn-toggle-metrics.collapsed svg {
+      transform: rotate(180deg);
+    }
+
+    .stat-cards-wrapper {
+      transition: max-height 0.28s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.22s ease, margin 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+      overflow: hidden;
+      max-height: 280px;
+      opacity: 1;
+    }
+    .stat-cards-wrapper.collapsed {
+      max-height: 0;
+      opacity: 0;
+      margin-top: 0 !important;
+      margin-bottom: -16px !important;
+      pointer-events: none;
+    }
+
+    /* 4 Stat Cards in #FAF9F7 */
+    .stat-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+    @media (max-width: 1024px) {
+      .stat-cards-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+    @media (max-width: 640px) {
+      .stat-cards-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    .stat-card {
+      background-color: var(--color-stat-card);
+      border: 1px solid var(--color-border-subtle);
+      border-radius: var(--radius-card);
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .stat-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .stat-card-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--color-text-muted);
+    }
+    .stat-icon-chip {
+      width: 26px;
+      height: 26px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .chip-blue {
+      background: #EFF6FF;
+      color: #3B82F6;
+    }
+    .chip-green {
+      background: #ECFDF5;
+      color: #10B981;
+    }
+    .chip-orange {
+      background: #FFF7ED;
+      color: #F97316;
+    }
+    .chip-grey {
+      background: #F3F4F6;
+      color: #6B7280;
+    }
+    .stat-card-value {
+      font-size: 30px;
+      font-weight: 700;
+      color: var(--color-text-primary);
+      letter-spacing: -0.03em;
+      line-height: 1;
+    }
+    .stat-card-sub {
+      font-size: 11px;
+      color: var(--color-text-muted);
+    }
+
+    /* Filter Row */
+    .filter-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .status-filters {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .status-filter-item {
+      font-size: 12px;
+      color: var(--color-text-secondary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding-bottom: 4px;
+      border-bottom: 2px solid transparent;
+      transition: all 0.15s ease;
+      font-weight: 500;
+    }
+    .status-filter-item:hover {
+      color: var(--color-text-primary);
+    }
+    .status-filter-item.active {
+      color: var(--color-text-primary);
+      font-weight: 600;
+      border-bottom-color: var(--color-text-primary);
+    }
+    .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+    .dot-pending { background-color: #F59E0B; }
+    .dot-approved { background-color: #10B981; }
+    .dot-cancelled { background-color: #9CA3AF; }
+    .dot-rejected { background-color: #EF4444; }
+
+    .search-filter-box {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .search-input-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .search-input {
+      height: 34px;
+      width: 240px;
+      padding: 0 36px 0 32px;
+      background: #FFFFFF;
+      border: 1px solid #E5E7EB;
+      border-radius: 8px;
+      font-size: 12px;
+      color: var(--color-text-primary);
+      outline: none;
+      transition: all 0.15s;
+    }
+    body.lang-ar .search-input {
+      padding: 0 32px 0 36px;
+    }
+    .search-input:focus {
+      border-color: #9CA3AF;
+      box-shadow: 0 0 0 2px rgba(18, 22, 30, 0.05);
+    }
+    .search-icon {
+      position: absolute;
+      left: 10px;
+      width: 14px;
+      height: 14px;
+      color: #9CA3AF;
+      pointer-events: none;
+    }
+    body.lang-ar .search-icon {
+      left: auto;
+      right: 10px;
+    }
+    .search-kbd {
+      position: absolute;
+      right: 8px;
+      font-size: 10px;
+      font-weight: 600;
+      color: #9CA3AF;
+      background: #F4F2EE;
+      padding: 2px 4px;
+      border-radius: 4px;
+      border: 1px solid #E5E7EB;
+      pointer-events: none;
+    }
+    body.lang-ar .search-kbd {
+      right: auto;
+      left: 8px;
+    }
+
+    .btn-filter {
+      height: 34px;
+      padding: 0 12px;
+      background: #FFFFFF;
+      border: 1px solid #E5E7EB;
+      border-radius: 8px;
+      color: #374151;
+      font-size: 12px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn-filter:hover {
+      background: #FAF9F7;
+      border-color: #D3D0C9;
+    }
+
+    /* 4. Table Container: Rounded border (~16px), sticky header without broken scroll */
+    .table-card {
+      background: #FFFFFF;
+      border: 1px solid var(--color-border-table);
+      border-radius: var(--radius-table);
+      position: relative;
+    }
+    table.data-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      text-align: left;
+    }
+    body.lang-ar table.data-table {
+      text-align: right;
+    }
+
+    /* Sticky Table Header: sticks at top of scroll container */
+    table.data-table thead th {
+      position: sticky;
+      top: 0;
+      z-index: 20; /* below main header z-index: 30 */
+      background: #FAF9F7;
+      padding: 10px 14px;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--color-text-muted);
+      border-bottom: 1px solid var(--color-border-table);
+      border-right: 1px solid var(--color-border-col);
+      white-space: nowrap;
+      user-select: none;
+      box-shadow: 0 1px 1px rgba(0, 0, 0, 0.02);
+    }
+    table.data-table thead th:first-child {
+      border-top-left-radius: 15px;
+    }
+    table.data-table thead th:last-child {
+      border-top-right-radius: 15px;
+      border-right: none;
+    }
+    body.lang-ar table.data-table thead th {
+      border-right: none;
+      border-left: 1px solid var(--color-border-col);
+    }
+    body.lang-ar table.data-table thead th:first-child {
+      border-top-left-radius: 0;
+      border-top-right-radius: 15px;
+    }
+    body.lang-ar table.data-table thead th:last-child {
+      border-top-right-radius: 0;
+      border-top-left-radius: 15px;
+      border-left: none;
+    }
+
+    table.data-table th .th-wrap {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+    table.data-table th .sort-arrow {
+      width: 11px;
+      height: 11px;
+      color: #9CA3AF;
+    }
+
+    table.data-table td {
+      padding: 8px 14px;
+      height: var(--row-height);
+      border-bottom: 1px solid var(--color-border-subtle);
+      border-right: 1px solid var(--color-border-col);
+      vertical-align: middle;
+      font-size: 12px;
+      font-weight: 500;
+      background: #FFFFFF;
+      transition: background 0.1s;
+    }
+    body.lang-ar table.data-table td {
+      border-right: none;
+      border-left: 1px solid var(--color-border-col);
+    }
+    table.data-table td:last-child {
+      border-right: none;
+      border-left: none;
+    }
+    table.data-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    /* Selected Row Highlight */
+    table.data-table tr.row-selected td {
+      background-color: #F9FAFB !important;
+    }
+
+    /* Checkbox */
+    .custom-checkbox {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      cursor: pointer;
+    }
+    .custom-checkbox input {
+      position: absolute;
+      opacity: 0;
+      cursor: pointer;
+    }
+    .checkmark {
+      width: 15px;
+      height: 15px;
+      background-color: #FFFFFF;
+      border: 1.5px solid #D1D5DB;
+      border-radius: 3px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+    }
+    .custom-checkbox input:checked ~ .checkmark {
+      background-color: #EF4444; /* Red checkbox */
+      border-color: #EF4444;
+    }
+    .custom-checkbox input:checked ~ .checkmark::after {
+      content: "";
+      width: 3.5px;
+      height: 7px;
+      border: solid white;
+      border-width: 0 1.8px 1.8px 0;
+      transform: rotate(45deg);
+      margin-bottom: 2px;
+    }
+
+    /* Request Details Column */
+    .req-details-cell {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      position: relative;
+    }
+    .tags-row {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      flex-wrap: wrap;
+    }
+    .pill-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 9.5px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      padding: 2.5px 7px;
+      border-radius: 9999px;
+      border-width: 1px;
+      border-style: solid;
+      white-space: nowrap;
+    }
+    .badge-blue {
+      background: #F0F7FF;
+      border-color: #BFDBFE;
+      color: #2563EB;
+    }
+    .badge-blue .dot-inner { background: #2563EB; }
+
+    .badge-green {
+      background: #F0FDF4;
+      border-color: #BBF7D0;
+      color: #16A34A;
+    }
+    .badge-green .dot-inner { background: #16A34A; }
+
+    .badge-teal {
+      background: #F0FDFA;
+      border-color: #99F6E4;
+      color: #0D9488;
+    }
+    .badge-teal .dot-inner { background: #0D9488; }
+
+    .dot-inner {
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+    }
+
+    .date-chip {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 6px;
+      background: #FFFFFF;
+      border: 1px solid #E5E7EB;
+      border-radius: 4px;
+      font-size: 9.5px;
+      font-weight: 600;
+      color: var(--color-text-muted);
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      width: fit-content;
+    }
+
+    /* Approver Column: Grey circular avatar + name on two lines */
+    .approver-cell {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+    .approver-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #E5E7EB;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #9CA3AF;
+      flex-shrink: 0;
+    }
+    .approver-name-lines {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.25;
+      font-size: 11.5px;
+      font-weight: 500;
+      color: var(--color-text-primary);
+    }
+
+    /* Status Column */
+    .status-cell {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11.5px;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    /* Request On Column */
+    .request-on-cell {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--color-text-secondary);
+      font-size: 11.5px;
+      white-space: nowrap;
+    }
+    .request-on-cell svg {
+      width: 13px;
+      height: 13px;
+      color: #9CA3AF;
+    }
+
+    /* Actions Column */
+    .actions-cell {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .action-icon-btn {
+      width: 26px;
+      height: 26px;
+      border: none;
+      background: transparent;
+      border-radius: 6px;
+      color: #6B7280;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+    }
+    .action-icon-btn:hover {
+      background: #F3F4F6;
+      color: var(--color-text-primary);
+    }
+    .action-icon-btn svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    /* Tooltip: Unclipped, high z-index */
+    .tooltip-wrap {
+      position: relative;
+      display: inline-block;
+    }
+    .custom-tooltip {
+      position: absolute;
+      bottom: calc(100% + 7px);
+      left: 10px;
+      background: #18181B;
+      color: #FFFFFF;
+      padding: 7px 11px;
+      border-radius: 8px;
+      font-size: 11px;
+      white-space: nowrap;
+      z-index: 50;
+      box-shadow: 0 10px 20px -3px rgba(0,0,0,0.3);
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      pointer-events: none;
+    }
+    body.lang-ar .custom-tooltip {
+      left: auto;
+      right: 10px;
+    }
+    .custom-tooltip::after {
+      content: "";
+      position: absolute;
+      top: 100%;
+      left: 18px;
+      border-width: 5px;
+      border-style: solid;
+      border-color: #18181B transparent transparent transparent;
+    }
+    body.lang-ar .custom-tooltip::after {
+      left: auto;
+      right: 18px;
+    }
+    .tooltip-title {
+      font-weight: 600;
+      color: #FFFFFF;
+      font-size: 11px;
+    }
+    .tooltip-desc {
+      color: #A1A1AA;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 10.5px;
+    }
+    .tooltip-desc .dot-inner {
+      background: #10B981;
+    }
+
+    /* 5. Footer & Pagination: Fully visible inside scroll container */
+    .table-footer {
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid var(--color-border-subtle);
+      border-bottom-left-radius: var(--radius-table);
+      border-bottom-right-radius: var(--radius-table);
+      background: #FFFFFF;
+      font-size: 11.5px;
+      color: var(--color-text-secondary);
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .pagination-controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .page-numbers {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .page-btn {
+      min-width: 26px;
+      height: 26px;
+      padding: 0 5px;
+      border-radius: 6px;
+      border: 1px solid var(--color-border-card);
+      background: #FFFFFF;
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--color-text-secondary);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .page-btn:hover {
+      background: #FAF9F7;
+      color: var(--color-text-primary);
+    }
+    .page-btn.active {
+      background: #FFFFFF;
+      color: #12161E;
+      border: 1.5px solid #12161E;
+    }
+    .page-size-wrap {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      background: #FFFFFF;
+      border: 1px solid var(--color-border-card);
+      border-radius: 6px;
+      padding: 3px 7px;
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--color-text-secondary);
+      cursor: pointer;
+    }
+    .page-size-wrap select {
+      border: none;
+      background: transparent;
+      font-size: inherit;
+      color: inherit;
+      outline: none;
+      cursor: pointer;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #12161E;
+      color: #FFFFFF;
+      padding: 9px 16px;
+      border-radius: 8px;
+      font-size: 12px;
+      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      gap: 8px;
+    }
+    body.lang-ar .toast {
+      right: auto;
+      left: 20px;
+    }
+
+    /* 7. Mobile / Tablet Responsive Drawer (< 1024px) */
+    .sidebar-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(18, 22, 30, 0.4);
+      backdrop-filter: blur(2px);
+      z-index: 80;
+    }
+    @media (max-width: 1024px) {
+      aside.sidebar {
+        position: fixed;
+        top: 3px;
+        left: 0;
+        bottom: 0;
+        z-index: 100;
+        transform: translateX(-100%);
+        box-shadow: 4px 0 24px rgba(0, 0, 0, 0.12);
+      }
+      aside.sidebar.drawer-open {
+        transform: translateX(0);
+      }
+      body.lang-ar aside.sidebar {
+        left: auto;
+        right: 0;
+        transform: translateX(100%);
+      }
+      body.lang-ar aside.sidebar.drawer-open {
+        transform: translateX(0);
+      }
+      .sidebar-backdrop.active {
+        display: block;
+      }
+      .mobile-menu-btn {
+        display: flex;
+      }
+      .header-bar {
+        padding: 0 20px;
+      }
+      .scroll-container {
+        padding: 20px 20px 48px 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Thin Black Bar -->
+  <div class="top-black-bar"></div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="toast">Action completed successfully</div>
+
+  <!-- Mobile Drawer Backdrop -->
+  <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="closeSidebarDrawer()"></div>
+
+  <div class="app-layout">
+    
+    <!-- Left Sidebar: Fixed width ~230px, full height, NEVER scrolls with page -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <a href="dashboard.html" class="logo-container">
+          <div class="logo-icon">
+            <svg width="24" height="24" viewBox="0 0 32 32" fill="none" stroke="#12161E" stroke-width="2.5" stroke-linecap="round">
+              <path d="M16 4C9.37 4 4 9.37 4 16c0 6.63 5.37 12 12 12s12-5.37 12-12"></path>
+              <path d="M16 10a6 6 0 1 0 6 6"></path>
+              <circle cx="16" cy="16" r="2" fill="#12161E"></circle>
+            </svg>
+          </div>
+          <span class="logo-text" data-i18n="grok">Grok</span>
+        </a>
+        <button class="collapse-btn" title="Collapse sidebar" onclick="toggleSidebarCollapse()">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="11 17 6 12 11 7"></polyline><polyline points="18 17 13 12 18 7"></polyline></svg>
+        </button>
+      </div>
+
+      <!-- Nav List: Only this scrolls if content exceeds height -->
+      <nav class="sidebar-nav">
+        <!-- Section: HR MANAGEMENT -->
+        <div class="nav-section">
+          <div class="nav-section-title">
+            <span data-i18n="hr_management">HR MANAGEMENT</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </div>
+          <a href="dashboard.html" class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+            <span data-i18n="dashboard">Dashboard</span>
+          </a>
+          <a href="users.html" class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            <span data-i18n="user">User</span>
+          </a>
+          <!-- Active Item: Requests -->
+          <a href="index.html" class="nav-item active">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="14" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect></svg>
+            <span data-i18n="requests">Requests</span>
+            <svg class="cursor-pointer-badge" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M10 2a2 2 0 0 0-2 2v6.6a2 2 0 0 0-.6 1.4v4a5 5 0 0 0 5 5h3a5 5 0 0 0 5-5v-5a2 2 0 0 0-2-2h-1v-1a2 2 0 0 0-2-2h-1V4a2 2 0 0 0-2-2h-2.4z" fill="#9CA3AF"/>
+            </svg>
+          </a>
+          <a class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+            <span data-i18n="tasks">Tasks</span>
+          </a>
+        </div>
+
+        <!-- Section: TIME & SCHEDULING -->
+        <div class="nav-section">
+          <div class="nav-section-title">
+            <span data-i18n="time_scheduling">TIME & SCHEDULING</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </div>
+          <a href="shifts.html" class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            <span data-i18n="shifts">Shifts</span>
+          </a>
+          <a class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+            <span data-i18n="scheduler">Scheduler</span>
+          </a>
+          <a class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+            <span data-i18n="attendance">Attendance</span>
+          </a>
+          <a class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"></rect><circle cx="12" cy="13" r="2"></circle><line x1="12" y1="9" x2="12" y2="9.5"></line></svg>
+            <span data-i18n="attendance_clarification">Attendance clarification</span>
+          </a>
+          <a class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2v20M2 12h20"></path></svg>
+            <span data-i18n="medical_maintenance">Medical maintenance</span>
+          </a>
+        </div>
+
+        <!-- Section: PAYROLL & FINANCE -->
+        <div class="nav-section">
+          <div class="nav-section-title">
+            <span data-i18n="payroll_finance">PAYROLL & FINANCE</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </div>
+          <a class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+            <span data-i18n="payroll">Payroll</span>
+          </a>
+          <a class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+            <span data-i18n="employee_benefits">Employee benefits</span>
+          </a>
+          <a class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="6" width="20" height="12" rx="2"></rect><circle cx="12" cy="12" r="2"></circle></svg>
+            <span data-i18n="salaries">Salaries</span>
+          </a>
+          <a class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="3" y1="21" x2="21" y2="21"></line><line x1="3" y1="10" x2="21" y2="10"></line><polyline points="5 6 12 3 19 6"></polyline><line x1="4" y1="10" x2="4" y2="21"></line><line x1="20" y1="10" x2="20" y2="21"></line></svg>
+            <span data-i18n="loans">Loans</span>
+          </a>
+        </div>
+      </nav>
+    </aside>
+
+    <!-- Right: White Main Panel (flex column, min-width: 0, height: 100%, rounded top-left corner ~16px) -->
+    <main class="main-panel">
+      
+      <!-- 3a. Header Bar: PINNED at top of the panel (does not scroll) -->
+      <div class="header-bar">
+        <div class="header-left-group">
+          <!-- Mobile Menu Toggle Button (<1024px) -->
+          <button class="mobile-menu-btn" onclick="openSidebarDrawer()" title="Open Navigation Menu">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+          </button>
+          
+          <div class="breadcrumb">
+            <svg class="device-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="3" width="20" height="14" rx="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+            <span class="chevron">›</span>
+            <a href="#" data-i18n="hr_management_upper">HR MANAGEMENT</a>
+            <span class="chevron">›</span>
+            <span class="current" data-i18n="requests_upper">REQUESTS</span>
+          </div>
+        </div>
+
+        <div class="header-right">
+          <!-- Translation Switcher -->
+          <button class="header-icon-btn" title="Toggle Language (English / Arabic)" onclick="toggleLanguage()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 8l6 6M4 14h7M2 5h12M7 2v3M22 22l-5-10-5 10M14 18h6"></path></svg>
+          </button>
+
+          <!-- Notifications with Red Dot -->
+          <button class="header-icon-btn" title="Notifications">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+            <span class="badge-dot"></span>
+          </button>
+
+          <!-- Theme / History Icon -->
+          <button class="header-icon-btn" title="Theme">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 15 15"></polyline></svg>
+          </button>
+
+          <!-- User Block -->
+          <div class="user-block">
+            <img class="user-avatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&h=120&q=80" alt="Ozeer Ahmed">
+            <div class="user-info">
+              <span class="user-name" data-i18n="user_name">Ozeer Ahmed</span>
+              <span class="user-email">ozeer.92@yahoo.com</span>
+            </div>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6B7280" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3b. SCROLL CONTAINER below header: flex: 1, min-height: 0, overflow-y: auto -->
+      <div class="scroll-container" id="mainScrollContainer">
+        
+        <!-- Page Title Row -->
+        <div class="page-header">
+          <div class="page-title-box">
+            <h1 data-i18n="page_title">My Requests</h1>
+            <p data-i18n="page_subtitle">Create a request and follow every approval and correction in one place.</p>
+          </div>
+          <div class="page-actions">
+            <button class="btn btn-export" onclick="showToast('Data exported successfully')">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+              <span data-i18n="export">Export</span>
+            </button>
+            <button class="btn btn-create" onclick="showToast('Create request modal opened')">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+              <span data-i18n="create_request">Create Request</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Sub Tabs: Pill Container + Collapsible Toggle -->
+        <div class="tabs-and-toggle-row">
+          <div class="subtabs-container">
+            <button class="subtab-btn active" data-i18n="my_requests_tab" onclick="switchSubTab(this)">My Requests</button>
+            <button class="subtab-btn" data-i18n="requests_tab" onclick="switchSubTab(this)">Requests</button>
+            <button class="subtab-btn" data-i18n="my_approvals_tab" onclick="switchSubTab(this)">My Approvals</button>
+          </div>
+
+          <!-- Collapse/Expand Metrics Button -->
+          <button id="toggleMetricsBtn" class="btn-toggle-metrics" onclick="toggleMetricsSection()" title="Collapse or Expand Metrics Cards">
+            <span id="toggleMetricsText" data-i18n="hide_metrics">Hide Cards</span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="18 15 12 9 6 15"></polyline>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Collapsible Stat Cards Container in #FAF9F7 -->
+        <div class="stat-cards-wrapper" id="statCardsWrapper">
+          <div class="stat-cards-grid">
+            <!-- Card 1 -->
+            <div class="stat-card">
+              <div class="stat-card-header">
+                <span class="stat-card-label" data-i18n="metric_1_title">CURRENT FILTER RESULTS</span>
+                <div class="stat-icon-chip chip-blue">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+                </div>
+              </div>
+              <div class="stat-card-value" id="metric-results-count" data-i18n="metric_1_val">06</div>
+              <div class="stat-card-sub" data-i18n="metric_1_sub">All matching results</div>
+            </div>
+
+            <!-- Card 2 -->
+            <div class="stat-card">
+              <div class="stat-card-header">
+                <span class="stat-card-label" data-i18n="metric_2_title">AWAITING APPROVALS</span>
+                <div class="stat-icon-chip chip-green">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+                </div>
+              </div>
+              <div class="stat-card-value" data-i18n="metric_2_val">06</div>
+              <div class="stat-card-sub" data-i18n="metric_2_sub">Load requests only</div>
+            </div>
+
+            <!-- Card 3 -->
+            <div class="stat-card">
+              <div class="stat-card-header">
+                <span class="stat-card-label" data-i18n="metric_3_title">LOW STOCK ITEMS</span>
+                <div class="stat-icon-chip chip-orange">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                </div>
+              </div>
+              <div class="stat-card-value" data-i18n="metric_3_val">96</div>
+              <div class="stat-card-sub" data-i18n="metric_3_sub">Reject & return among items</div>
+            </div>
+
+            <!-- Card 4 -->
+            <div class="stat-card">
+              <div class="stat-card-header">
+                <span class="stat-card-label" data-i18n="metric_4_title">TOTAL EST. VALUE AT RISK</span>
+                <div class="stat-icon-chip chip-grey">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"></rect><line x1="3" y1="3" x2="21" y2="21"></line></svg>
+                </div>
+              </div>
+              <div class="stat-card-value" data-i18n="metric_4_val">12</div>
+              <div class="stat-card-sub" data-i18n="metric_4_sub">Purchased recommended</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filter Row -->
+        <div class="filter-row">
+          <div class="status-filters">
+            <div class="status-filter-item active" data-filter="all" onclick="filterStatus('all', this)">
+              <span data-i18n="filter_all">All Request</span>
+            </div>
+            <div class="status-filter-item" data-filter="requested" onclick="filterStatus('requested', this)">
+              <span class="dot dot-pending"></span>
+              <span data-i18n="filter_pending">Pending</span>
+            </div>
+            <div class="status-filter-item" data-filter="approved" onclick="filterStatus('approved', this)">
+              <span class="dot dot-approved"></span>
+              <span data-i18n="filter_approved">Approved</span>
+            </div>
+            <div class="status-filter-item" data-filter="cancelled" onclick="filterStatus('cancelled', this)">
+              <span class="dot dot-cancelled"></span>
+              <span data-i18n="filter_cancelled">Cancelled</span>
+            </div>
+            <div class="status-filter-item" data-filter="rejected" onclick="filterStatus('rejected', this)">
+              <span class="dot dot-rejected"></span>
+              <span data-i18n="filter_rejected">Rejected</span>
+            </div>
+          </div>
+
+          <div class="search-filter-box">
+            <div class="search-input-wrap">
+              <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+              <input type="text" id="searchInput" class="search-input" placeholder="Search adjustments..." data-i18n-ph="search_placeholder" oninput="handleSearch()">
+              <span class="search-kbd">⌘K</span>
+            </div>
+
+            <button class="btn-filter" onclick="showToast('Filter options')">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+              <span data-i18n="filter_btn">Filter</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 4. Table: Rounded bordered container (~16px radius) with sticky header -->
+        <div class="table-card">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th style="width: 44px; text-align: center;">
+                  <label class="custom-checkbox">
+                    <input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll(this)">
+                    <span class="checkmark"></span>
+                  </label>
+                </th>
+                <th>
+                  <div class="th-wrap">
+                    <span data-i18n="th_id">ID</span>
+                    <svg class="sort-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 15l5 5 5-5M7 9l5-5 5 5"></path></svg>
+                  </div>
+                </th>
+                <th>
+                  <div class="th-wrap">
+                    <span data-i18n="th_details">REQUEST DETAILS</span>
+                    <svg class="sort-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 15l5 5 5-5M7 9l5-5 5 5"></path></svg>
+                  </div>
+                </th>
+                <th>
+                  <div class="th-wrap">
+                    <span data-i18n="th_approver">APPROVER</span>
+                    <svg class="sort-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 15l5 5 5-5M7 9l5-5 5 5"></path></svg>
+                  </div>
+                </th>
+                <th>
+                  <div class="th-wrap">
+                    <span data-i18n="th_status">STATUS</span>
+                    <svg class="sort-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 15l5 5 5-5M7 9l5-5 5 5"></path></svg>
+                  </div>
+                </th>
+                <th>
+                  <div class="th-wrap">
+                    <span data-i18n="th_request_on">REQUEST ON</span>
+                    <svg class="sort-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 15l5 5 5-5M7 9l5-5 5 5"></path></svg>
+                  </div>
+                </th>
+                <th>
+                  <div class="th-wrap">
+                    <span data-i18n="th_actions">ACTIONS</span>
+                    <svg class="sort-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 15l5 5 5-5M7 9l5-5 5 5"></path></svg>
+                  </div>
+                </th>
+              </tr>
+            </thead>
+            <tbody id="tableBody">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+
+          <!-- 5. Table Footer & Pagination: Fully visible -->
+          <div class="table-footer">
+            <div class="footer-count" id="footerCount" data-i18n="showing_count">
+              Showing 1 to 8 of 2,845 items
+            </div>
+            <div class="pagination-controls">
+              <div class="page-numbers">
+                <button class="page-btn active">1</button>
+                <button class="page-btn">2</button>
+                <button class="page-btn">3</button>
+                <button class="page-btn">›</button>
+              </div>
+              <div class="page-size-wrap">
+                <select id="pageSizeSelect">
+                  <option value="10">10/pages</option>
+                  <option value="25">25/pages</option>
+                  <option value="50">50/pages</option>
+                </select>
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // Bilingual Localization Dictionary (English & Arabic)
+    const translations = {
+      en: {
+        grok: "Grok",
+        hr_management: "HR MANAGEMENT",
+        hr_management_upper: "HR MANAGEMENT",
+        requests_upper: "REQUESTS",
+        dashboard: "Dashboard",
+        user: "User",
+        requests: "Requests",
+        tasks: "Tasks",
+        time_scheduling: "TIME & SCHEDULING",
+        shifts: "Shifts",
+        scheduler: "Scheduler",
+        attendance: "Attendance",
+        attendance_clarification: "Attendance clarification",
+        medical_maintenance: "Medical maintenance",
+        payroll_finance: "PAYROLL & FINANCE",
+        payroll: "Payroll",
+        employee_benefits: "Employee benefits",
+        salaries: "Salaries",
+        loans: "Loans",
+        user_name: "Ozeer Ahmed",
+        page_title: "My Requests",
+        page_subtitle: "Create a request and follow every approval and correction in one place.",
+        export: "Export",
+        create_request: "Create Request",
+        hide_metrics: "Hide Cards",
+        show_metrics: "Show Cards",
+        my_requests_tab: "My Requests",
+        requests_tab: "Requests",
+        my_approvals_tab: "My Approvals",
+        metric_1_title: "CURRENT FILTER RESULTS",
+        metric_1_val: "06",
+        metric_1_sub: "All matching results",
+        metric_2_title: "AWAITING APPROVALS",
+        metric_2_val: "06",
+        metric_2_sub: "Load requests only",
+        metric_3_title: "LOW STOCK ITEMS",
+        metric_3_val: "96",
+        metric_3_sub: "Reject & return among items",
+        metric_4_title: "TOTAL EST. VALUE AT RISK",
+        metric_4_val: "12",
+        metric_4_sub: "Purchased recommended",
+        filter_all: "All Request",
+        filter_pending: "Pending",
+        filter_approved: "Approved",
+        filter_cancelled: "Cancelled",
+        filter_rejected: "Rejected",
+        search_placeholder: "Search adjustments...",
+        filter_btn: "Filter",
+        th_id: "ID",
+        th_details: "REQUEST DETAILS",
+        th_approver: "APPROVER",
+        th_status: "STATUS",
+        th_request_on: "REQUEST ON",
+        th_actions: "ACTIONS",
+        status_requested: "Requested",
+        status_approved: "Approved",
+        status_cancelled: "Cancelled",
+        status_rejected: "Rejected",
+        showing_count: "Showing 1 to 8 of 2,845 items",
+        resignation_reason: "Resignation Reason",
+        found_new_job: "Found New Job"
+      },
+      ar: {
+        grok: "جروك",
+        hr_management: "إدارة الموارد البشرية",
+        hr_management_upper: "إدارة الموارد البشرية",
+        requests_upper: "الطلبات",
+        dashboard: "لوحة التحكم",
+        user: "المستخدمون",
+        requests: "الطلبات",
+        tasks: "المهام",
+        time_scheduling: "الوقت والجدولة",
+        shifts: "المناوبات",
+        scheduler: "المجدول",
+        attendance: "الحضور والانصراف",
+        attendance_clarification: "توضيح الحضور",
+        medical_maintenance: "الصيانة الطبية",
+        payroll_finance: "الرواتب والمالية",
+        payroll: "مسير الرواتب",
+        employee_benefits: "مزايا الموظفين",
+        salaries: "الرواتب",
+        loans: "القروض",
+        user_name: "أوزير أحمد",
+        page_title: "طلباتي",
+        page_subtitle: "أنشئ طلباً وتابع كل موافقة وتعديل في مكان واحد.",
+        export: "تصدير",
+        create_request: "إنشاء طلب",
+        hide_metrics: "إخفاء البطاقات",
+        show_metrics: "عرض البطاقات",
+        my_requests_tab: "طلباتي",
+        requests_tab: "الطلبات",
+        my_approvals_tab: "موافقاتي",
+        metric_1_title: "نتائج التصفية الحالية",
+        metric_1_val: "٠٦",
+        metric_1_sub: "جميع النتائج المطابقة",
+        metric_2_title: "بانتظار الموافقة",
+        metric_2_val: "٠٦",
+        metric_2_sub: "طلبات التحميل فقط",
+        metric_3_title: "عناصر منخفضة المخزون",
+        metric_3_val: "٩٦",
+        metric_3_sub: "الرفض والإرجاع بين العناصر",
+        metric_4_title: "إجمالي القيمة المقدرة للخطر",
+        metric_4_val: "١٢",
+        metric_4_sub: "المشتريات الموصى بها",
+        filter_all: "جميع الطلبات",
+        filter_pending: "قيد الانتظار",
+        filter_approved: "معتمد",
+        filter_cancelled: "ملغي",
+        filter_rejected: "مرفوض",
+        search_placeholder: "البحث في التعديلات...",
+        filter_btn: "تصفية",
+        th_id: "المعرّف",
+        th_details: "تفاصيل الطلب",
+        th_approver: "المعتمد",
+        th_status: "الحالة",
+        th_request_on: "تاريخ الطلب",
+        th_actions: "الإجراءات",
+        status_requested: "تم الطلب",
+        status_approved: "معتمد",
+        status_cancelled: "ملغي",
+        status_rejected: "مرفوض",
+        showing_count: "عرض ١ إلى ٨ من ٢,٨٤٥ عنصراً",
+        resignation_reason: "سبب الاستقالة",
+        found_new_job: "تم العثور على وظيفة جديدة"
+      }
+    };
+
+    // Table Data Set
+    const tableData = [
+      {
+        id: "ARKs1igzRC",
+        badges: [
+          { en: "LEAVE REQUEST", ar: "طلب إجازة", type: "badge-blue" },
+          { en: "SICK", ar: "مرضية", type: "badge-green" }
+        ],
+        datesEn: "MON, 17 JULY 2... — WED, 19 JULY 2...",
+        datesAr: "الإثنين، 17 يوليو 2... — الأربعاء، 19 يوليو 2...",
+        approverLinesEn: ["Saeed", "Al-Mut..."],
+        approverLinesAr: ["سعيد", "المطيري..."],
+        status: "requested",
+        statusDot: "dot-pending",
+        requestOnEn: "Mon 14 Jun 2025",
+        requestOnAr: "الإثنين 14 يونيو 2025",
+        checked: false
+      },
+      {
+        id: "CRUy4kfNZA",
+        badges: [
+          { en: "LEAVE REQUEST", ar: "طلب إجازة", type: "badge-blue" },
+          { en: "BEREAVEMENT", ar: "عزاء", type: "badge-teal" }
+        ],
+        datesEn: "MON, 17 JULY 2... — WED, 19 JULY 2...",
+        datesAr: "الإثنين، 17 يوليو 2... — الأربعاء، 19 يوليو 2...",
+        approverLinesEn: ["Ahmad", "Al-Mansour"],
+        approverLinesAr: ["أحمد", "المنصور"],
+        status: "approved",
+        statusDot: "dot-approved",
+        requestOnEn: "Thus 19 Jun 2025",
+        requestOnAr: "الخميس 19 يونيو 2025",
+        checked: false
+      },
+      {
+        id: "ETRq7mHsUV",
+        badges: [
+          { en: "RESIGNATION", ar: "استقالة", type: "badge-green" },
+          { en: "NEW JOB", ar: "وظيفة جديدة", type: "badge-green" }
+        ],
+        datesEn: "MON, 17 JULY 2025",
+        datesAr: "الإثنين 17 يوليو 2025",
+        approverLinesEn: ["Faisal", "Al-Juhani"],
+        approverLinesAr: ["فيصل", "الجهني"],
+        status: "rejected",
+        statusDot: "dot-rejected",
+        requestOnEn: "Sun 22 Jun 2025",
+        requestOnAr: "الأحد 22 يونيو 2025",
+        tooltip: true,
+        checked: false
+      },
+      {
+        id: "FVlz2nGpXQ",
+        badges: [
+          { en: "LEAVE REQUEST", ar: "طلب إجازة", type: "badge-blue" },
+          { en: "MARRIAGE", ar: "زواج", type: "badge-teal" }
+        ],
+        datesEn: "MON, 17 JULY 2... — WED, 19 JULY 2...",
+        datesAr: "الإثنين، 17 يوليو 2... — الأربعاء، 19 يوليو 2...",
+        approverLinesEn: ["Hassan", "Al-Rashid"],
+        approverLinesAr: ["حسن", "الراشد"],
+        status: "cancelled",
+        statusDot: "dot-cancelled",
+        requestOnEn: "Wed 25 Jun 2025",
+        requestOnAr: "الأربعاء 25 يونيو 2025",
+        checked: true // Row 4 checked
+      },
+      {
+        id: "CRUy4kfNZA",
+        badges: [
+          { en: "LEAVE REQUEST", ar: "طلب إجازة", type: "badge-blue" },
+          { en: "MATERNITY", ar: "أمومة", type: "badge-teal" }
+        ],
+        datesEn: "MON, 17 JULY 2... — WED, 19 JULY 2...",
+        datesAr: "الإثنين، 17 يوليو 2... — الأربعاء، 19 يوليو 2...",
+        approverLinesEn: ["Ahmad", "Al-Mansour"],
+        approverLinesAr: ["أحمد", "المنصور"],
+        status: "approved",
+        statusDot: "dot-approved",
+        requestOnEn: "Thus 19 Jun 2025",
+        requestOnAr: "الخميس 19 يونيو 2025",
+        checked: false
+      },
+      {
+        id: "ETRq7mHsUV",
+        badges: [
+          { en: "EXCUSE REQUEST", ar: "طلب استئذان", type: "badge-blue" },
+          { en: "FULL DAY", ar: "يوم كامل", type: "badge-green" }
+        ],
+        datesEn: "SUN 22 JUN 2025",
+        datesAr: "الأحد 22 يونيو 2025",
+        approverLinesEn: ["Faisal", "Al-Juhani"],
+        approverLinesAr: ["فيصل", "الجهني"],
+        status: "rejected",
+        statusDot: "dot-rejected",
+        requestOnEn: "Sun 22 Jun 2025",
+        requestOnAr: "الأحد 22 يونيو 2025",
+        checked: false
+      },
+      {
+        id: "FVlz2nGpXQ",
+        badges: [
+          { en: "LEAVE REQUEST", ar: "طلب إجازة", type: "badge-blue" },
+          { en: "STUDY", ar: "دراسية", type: "badge-teal" }
+        ],
+        datesEn: "MON, 17 JULY 2... — WED, 19 JULY 2...",
+        datesAr: "الإثنين، 17 يوليو 2... — الأربعاء، 19 يوليو 2...",
+        approverLinesEn: ["Hassan", "Al-Rashid"],
+        approverLinesAr: ["حسن", "الراشد"],
+        status: "cancelled",
+        statusDot: "dot-cancelled",
+        requestOnEn: "Wed 25 Jun 2025",
+        requestOnAr: "الأربعاء 25 يونيو 2025",
+        checked: false
+      }
+    ];
+
+    let currentLang = 'en';
+    let currentFilter = 'all';
+    let searchQuery = '';
+
+    function switchLanguage(lang) {
+      currentLang = lang;
+      const html = document.documentElement;
+      const body = document.body;
+
+      if (lang === 'ar') {
+        html.setAttribute('lang', 'ar');
+        html.setAttribute('dir', 'rtl');
+        body.setAttribute('dir', 'rtl');
+        body.classList.add('lang-ar');
+      } else {
+        html.setAttribute('lang', 'en');
+        html.setAttribute('dir', 'ltr');
+        body.setAttribute('dir', 'ltr');
+        body.classList.remove('lang-ar');
+      }
+
+      // Update static text elements
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (translations[lang][key]) {
+          el.textContent = translations[lang][key];
+        }
+      });
+
+      // Update placeholders
+      document.querySelectorAll('[data-i18n-ph]').forEach(el => {
+        const key = el.getAttribute('data-i18n-ph');
+        if (translations[lang][key]) {
+          el.setAttribute('placeholder', translations[lang][key]);
+        }
+      });
+
+      renderTable();
+    }
+
+    function toggleLanguage() {
+      switchLanguage(currentLang === 'en' ? 'ar' : 'en');
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById('tableBody');
+      const filtered = tableData.filter(row => {
+        const matchesFilter = currentFilter === 'all' || row.status === currentFilter;
+        const approverStr = (row.approverLinesEn.join(' ') + ' ' + row.approverLinesAr.join(' ')).toLowerCase();
+        const matchesSearch = searchQuery === '' || 
+          row.id.toLowerCase().includes(searchQuery) ||
+          approverStr.includes(searchQuery);
+        return matchesFilter && matchesSearch;
+      });
+
+      // Update results count in stat card 1
+      const countEl = document.getElementById('metric-results-count');
+      if (countEl) {
+        countEl.textContent = currentLang === 'ar' ? '٠٦' : '06';
+      }
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 32px; color: #9CA3AF;">
+          ${currentLang === 'ar' ? 'لا توجد نتائج مطابقة' : 'No matching requests found'}
+        </td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map((row, index) => {
+        const statusText = translations[currentLang][`status_${row.status}`] || row.status;
+        const approverLines = currentLang === 'ar' ? row.approverLinesAr : row.approverLinesEn;
+        const datesText = currentLang === 'ar' ? row.datesAr : row.datesEn;
+        const requestOnText = currentLang === 'ar' ? row.requestOnAr : row.requestOnEn;
+
+        // Badges HTML
+        const badgesHtml = row.badges.map(b => `
+          <span class="pill-badge ${b.type}">
+            <span class="dot-inner"></span>
+            ${currentLang === 'ar' ? b.ar : b.en}
+          </span>
+        `).join('');
+
+        // Tooltip HTML for Resignation row
+        const tooltipHtml = row.tooltip ? `
+          <div class="custom-tooltip">
+            <span class="tooltip-title">${translations[currentLang].resignation_reason}</span>
+            <span class="tooltip-desc">
+              <span class="dot-inner"></span>
+              ${translations[currentLang].found_new_job}
+            </span>
+          </div>
+        ` : '';
+
+        return `
+          <tr class="${row.checked ? 'row-selected' : ''}">
+            <td style="text-align: center;">
+              <label class="custom-checkbox">
+                <input type="checkbox" ${row.checked ? 'checked' : ''} onchange="toggleRowCheck(${index}, this)">
+                <span class="checkmark"></span>
+              </label>
+            </td>
+            <td>
+              <span style="font-weight: 600; color: #12161E;">${row.id}</span>
+            </td>
+            <td>
+              <div class="req-details-cell">
+                <div class="tooltip-wrap">
+                  ${tooltipHtml}
+                  <div class="tags-row">
+                    ${badgesHtml}
+                  </div>
+                </div>
+                <div class="date-chip">
+                  ${datesText}
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="approver-cell">
+                <div class="approver-avatar">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                  </svg>
+                </div>
+                <div class="approver-name-lines">
+                  <span>${approverLines[0]}</span>
+                  <span>${approverLines[1] || ''}</span>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="status-cell">
+                <span class="dot ${row.statusDot}"></span>
+                <span>${statusText}</span>
+              </div>
+            </td>
+            <td>
+              <div class="request-on-cell">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="4" width="18" height="18" rx="2"></rect>
+                  <line x1="16" y1="2" x2="16" y2="6"></line>
+                  <line x1="8" y1="2" x2="8" y2="6"></line>
+                  <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+                <span>${requestOnText}</span>
+              </div>
+            </td>
+            <td>
+              <div class="actions-cell">
+                <button class="action-icon-btn" title="View details" onclick="showToast('${currentLang === 'ar' ? 'عرض تفاصيل الطلب: ' : 'Viewing request: '}${row.id}')">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                  </svg>
+                </button>
+                <button class="action-icon-btn" title="Delete request" onclick="deleteRow('${row.id}')">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                  </svg>
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function filterStatus(status, element) {
+      currentFilter = status;
+      document.querySelectorAll('.status-filter-item').forEach(el => el.classList.remove('active'));
+      element.classList.add('active');
+      renderTable();
+    }
+
+    function handleSearch() {
+      searchQuery = document.getElementById('searchInput').value.trim().toLowerCase();
+      renderTable();
+    }
+
+    function toggleSelectAll(checkbox) {
+      const isChecked = checkbox.checked;
+      tableData.forEach(row => row.checked = isChecked);
+      renderTable();
+    }
+
+    function toggleRowCheck(index, checkbox) {
+      tableData[index].checked = checkbox.checked;
+      const tr = checkbox.closest('tr');
+      if (checkbox.checked) {
+        tr.classList.add('row-selected');
+      } else {
+        tr.classList.remove('row-selected');
+      }
+    }
+
+    function deleteRow(id) {
+      const idx = tableData.findIndex(r => r.id === id);
+      if (idx !== -1) {
+        tableData.splice(idx, 1);
+        renderTable();
+        showToast(currentLang === 'ar' ? `تم حذف الطلب ${id}` : `Deleted request ${id}`);
+      }
+    }
+
+    function toggleMetricsSection() {
+      const wrapper = document.getElementById('statCardsWrapper');
+      const btn = document.getElementById('toggleMetricsBtn');
+      const textSpan = document.getElementById('toggleMetricsText');
+      
+      const isCollapsed = wrapper.classList.toggle('collapsed');
+      btn.classList.toggle('collapsed', isCollapsed);
+      
+      const key = isCollapsed ? 'show_metrics' : 'hide_metrics';
+      textSpan.setAttribute('data-i18n', key);
+      textSpan.textContent = translations[currentLang][key];
+
+      try {
+        localStorage.setItem('grok_metrics_collapsed', isCollapsed ? 'true' : 'false');
+      } catch (e) {}
+    }
+
+    function switchSubTab(btn) {
+      document.querySelectorAll('.subtab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    }
+
+    function toggleSidebarCollapse() {
+      const sidebar = document.getElementById('sidebar');
+      sidebar.classList.toggle('collapsed');
+    }
+
+    function openSidebarDrawer() {
+      document.getElementById('sidebar').classList.add('drawer-open');
+      document.getElementById('sidebarBackdrop').classList.add('active');
+    }
+
+    function closeSidebarDrawer() {
+      document.getElementById('sidebar').classList.remove('drawer-open');
+      document.getElementById('sidebarBackdrop').classList.remove('active');
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.style.display = 'flex';
+      clearTimeout(window.toastTimer);
+      window.toastTimer = setTimeout(() => {
+        toast.style.display = 'none';
+      }, 2500);
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        document.getElementById('searchInput').focus();
+      }
+    });
+
+    // Restore collapsed state if previously saved
+    try {
+      if (localStorage.getItem('grok_metrics_collapsed') === 'true') {
+        const wrapper = document.getElementById('statCardsWrapper');
+        const btn = document.getElementById('toggleMetricsBtn');
+        const textSpan = document.getElementById('toggleMetricsText');
+        if (wrapper && btn && textSpan) {
+          wrapper.classList.add('collapsed');
+          btn.classList.add('collapsed');
+          textSpan.setAttribute('data-i18n', 'show_metrics');
+          textSpan.textContent = translations[currentLang].show_metrics;
+        }
+      }
+    } catch(e) {}
+
+    // Initial render
+    renderTable();
+  </script>
+</body>
+</html>

@@ -1,0 +1,1892 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Farabi Dental Clinics - Shifts & Scheduling</title>
+
+  <!-- Google Fonts Preconnect and Fallback CDN -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Noto+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* Self-hosted @font-face definitions */
+    @font-face {
+      font-family: 'Bricolage Grotesque';
+      font-style: normal;
+      font-weight: 400 700;
+      font-display: swap;
+      src: url('fonts/bricolage-grotesque.woff2') format('woff2');
+    }
+    @font-face {
+      font-family: 'IBM Plex Sans Arabic';
+      font-style: normal;
+      font-weight: 400;
+      font-display: swap;
+      src: url('fonts/ibm-plex-sans-arabic-400.woff2') format('woff2');
+    }
+    @font-face {
+      font-family: 'IBM Plex Sans Arabic';
+      font-style: normal;
+      font-weight: 600;
+      font-display: swap;
+      src: url('fonts/ibm-plex-sans-arabic-600.woff2') format('woff2');
+    }
+    @font-face {
+      font-family: 'IBM Plex Sans Arabic';
+      font-style: normal;
+      font-weight: 700;
+      font-display: swap;
+      src: url('fonts/ibm-plex-sans-arabic-700.woff2') format('woff2');
+    }
+
+    /* Design Tokens */
+    :root {
+      --font-sans: 'Bricolage Grotesque', sans-serif;
+      --font-arabic: 'IBM Plex Sans Arabic', 'Noto Sans Arabic', sans-serif;
+      
+      --color-sidebar: #F5F4F0;
+      --color-main-bg: #FFFFFF;
+      --color-stat-card: #FAF9F7;
+      --color-border-card: #E8E6E1;
+      --color-border-table: #ECEAE5;
+      --color-border-subtle: #F0EEE9;
+      --color-border-header: #EDEBE6;
+      --color-border-col: #F0F2F5;
+      --color-text-primary: #12161E;
+      --color-text-secondary: #5F6774;
+      --color-text-muted: #8E95A2;
+      --color-black: #12161E;
+      --color-black-hover: #222733;
+
+      --sidebar-width: 230px;
+      --sidebar-collapsed-width: 68px;
+      --radius-panel: 16px;
+      --radius-table: 16px;
+      --radius-card: 12px;
+      --row-height: 80px;
+      --page-margin: 56px;
+    }
+
+    /* Universal Font Enforcement */
+    *, *::before, *::after,
+    html, body, button, input, select, textarea,
+    table, th, td, tr, .custom-tooltip,
+    .toast, .pagination-controls, .subtabs-container, .pill-badge, .custom-checkbox {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: var(--font-sans) !important;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Arabic Typography & RTL Enforcement */
+    body[dir="rtl"],
+    body[dir="rtl"] *,
+    body.lang-ar,
+    body.lang-ar *,
+    [lang="ar"],
+    [lang="ar"] * {
+      font-family: var(--font-arabic) !important;
+    }
+
+    /* Page itself must NEVER scroll */
+    html, body {
+      height: 100dvh;
+      overflow: hidden;
+      margin: 0;
+      padding: 0;
+      background-color: var(--color-sidebar);
+      color: var(--color-text-primary);
+    }
+
+    /* App Shell Container: 2-column shell */
+    .app-shell {
+      display: flex;
+      width: 100vw;
+      height: 100dvh;
+      background-color: var(--color-sidebar);
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Left Sidebar: Fixed ~230px */
+    .sidebar {
+      width: var(--sidebar-width);
+      min-width: var(--sidebar-width);
+      max-width: var(--sidebar-width);
+      height: 100dvh;
+      background-color: var(--color-sidebar);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      transition: width 0.2s cubic-bezier(0.4, 0, 0.2, 1), min-width 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 20;
+      overflow: hidden;
+    }
+
+    .sidebar.collapsed {
+      width: var(--sidebar-collapsed-width);
+      min-width: var(--sidebar-collapsed-width);
+      max-width: var(--sidebar-collapsed-width);
+    }
+
+    /* Sidebar Logo Header */
+    .sidebar-header {
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px 0 20px;
+      flex-shrink: 0;
+    }
+
+    /* Farabi Brand Crest & Logo */
+    .brand-logo-farabi {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+
+    .farabi-crest {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      background: #A31C24;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #FFFFFF;
+      font-weight: 700;
+      flex-shrink: 0;
+      box-shadow: 0 2px 6px rgba(163, 28, 36, 0.25);
+    }
+    .farabi-crest span.ar {
+      font-family: var(--font-arabic) !important;
+      font-size: 13px;
+      line-height: 1;
+    }
+    .farabi-crest span.sub {
+      font-size: 7px;
+      letter-spacing: 0.05em;
+      opacity: 0.9;
+    }
+
+    .farabi-brand-text {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.1;
+    }
+    .farabi-brand-ar {
+      font-family: var(--font-arabic) !important;
+      font-size: 14px;
+      font-weight: 700;
+      color: #A31C24;
+    }
+    .farabi-brand-en {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      color: #A31C24;
+    }
+
+    .collapse-btn {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #FFFFFF;
+      border: 1px solid #E5E7EB;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: #6B7280;
+      transition: all 0.15s ease;
+      flex-shrink: 0;
+    }
+
+    .collapse-btn:hover {
+      background: #F3F4F6;
+      color: var(--color-black);
+    }
+
+    .sidebar.collapsed .collapse-btn svg {
+      transform: rotate(180deg);
+    }
+
+    /* Nav List inside Sidebar */
+    .sidebar-nav {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 10px 12px 24px 12px;
+      scrollbar-width: none;
+    }
+
+    .sidebar-nav::-webkit-scrollbar {
+      display: none;
+    }
+
+    .nav-section {
+      margin-bottom: 20px;
+    }
+
+    .nav-section-title {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      color: var(--color-text-muted);
+      text-transform: uppercase;
+      padding: 6px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      user-select: none;
+    }
+
+    .nav-section-title svg {
+      width: 12px;
+      height: 12px;
+      opacity: 0.7;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      height: 38px;
+      padding: 0 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--color-text-secondary);
+      text-decoration: none;
+      cursor: pointer;
+      transition: background 0.15s ease, color 0.15s ease;
+      position: relative;
+      margin-bottom: 2px;
+      white-space: nowrap;
+    }
+
+    .nav-item:hover {
+      background: rgba(0,0,0,0.03);
+      color: var(--color-text-primary);
+    }
+
+    .nav-item svg {
+      width: 16px;
+      height: 16px;
+      stroke-width: 1.8;
+      flex-shrink: 0;
+    }
+
+    .nav-item.active {
+      background: #FFFFFF;
+      color: var(--color-text-primary);
+      font-weight: 600;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
+    }
+
+    .cursor-pointer-badge {
+      position: absolute;
+      right: 12px;
+      width: 14px;
+      height: 14px;
+      opacity: 0.6;
+    }
+
+    body[dir="rtl"] .cursor-pointer-badge {
+      right: auto;
+      left: 12px;
+      transform: scaleX(-1);
+    }
+
+    .sidebar.collapsed .farabi-brand-text,
+    .sidebar.collapsed .nav-section-title,
+    .sidebar.collapsed .nav-item span,
+    .sidebar.collapsed .cursor-pointer-badge {
+      display: none;
+    }
+
+    .sidebar.collapsed .nav-item {
+      justify-content: center;
+      padding: 0;
+    }
+
+    /* Right: White Main Panel */
+    .main-panel {
+      flex: 1;
+      min-width: 0;
+      height: 100dvh;
+      background-color: var(--color-main-bg);
+      border-top-left-radius: var(--radius-panel);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: -4px 0 20px rgba(0,0,0,0.02);
+      position: relative;
+    }
+
+    body[dir="rtl"] .main-panel {
+      border-top-left-radius: 0;
+      border-top-right-radius: var(--radius-panel);
+      box-shadow: 4px 0 20px rgba(0,0,0,0.02);
+    }
+
+    /* Header Bar: PINNED */
+    .header-bar {
+      height: 60px;
+      background-color: var(--color-main-bg);
+      border-bottom: 1px solid var(--color-border-header);
+      padding: 0 var(--page-margin);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+      z-index: 10;
+    }
+
+    .header-left-group {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .mobile-menu-btn {
+      display: none;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 6px;
+      color: #374151;
+      border-radius: 6px;
+    }
+
+    .breadcrumb {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--color-text-muted);
+    }
+
+    .breadcrumb .device-icon {
+      width: 14px;
+      height: 14px;
+      stroke-width: 2;
+    }
+
+    .breadcrumb .chevron {
+      font-size: 13px;
+      color: #CBD5E1;
+    }
+
+    .breadcrumb a {
+      color: var(--color-text-muted);
+      text-decoration: none;
+    }
+
+    .breadcrumb a:hover {
+      color: var(--color-text-primary);
+    }
+
+    .breadcrumb .current {
+      color: var(--color-text-primary);
+      text-decoration: underline;
+      text-underline-offset: 4px;
+      text-decoration-thickness: 1.5px;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .header-icon-btn {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      color: #6B7280;
+      position: relative;
+      transition: background 0.15s ease;
+    }
+
+    .header-icon-btn:hover {
+      background: #F3F4F6;
+      color: var(--color-black);
+    }
+
+    .header-icon-btn .badge-dot {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      width: 6px;
+      height: 6px;
+      background: #EF4444;
+      border-radius: 50%;
+      border: 1.5px solid #FFFFFF;
+    }
+
+    /* Farabi User Block */
+    .user-block {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 4px 8px 4px 4px;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: background 0.15s ease;
+      margin-left: 6px;
+    }
+
+    body[dir="rtl"] .user-block {
+      margin-left: 0;
+      margin-right: 6px;
+    }
+
+    .user-block:hover {
+      background: #F8F9FA;
+    }
+
+    .user-avatar-circle {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #F3F4F6;
+      border: 1px solid #E5E7EB;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #4B5563;
+      font-size: 11px;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+
+    .user-info {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.15;
+    }
+
+    .user-name {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--color-text-primary);
+    }
+
+    .user-email {
+      font-size: 10px;
+      color: var(--color-text-muted);
+    }
+
+    /* Dedicated Scroll Container */
+    .scroll-container {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      overflow-x: hidden;
+      scrollbar-gutter: stable;
+      padding: 24px var(--page-margin) var(--page-margin) var(--page-margin);
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .scroll-container::-webkit-scrollbar {
+      width: 6px;
+    }
+    .scroll-container::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .scroll-container::-webkit-scrollbar-thumb {
+      background: #E5E7EB;
+      border-radius: 3px;
+    }
+    .scroll-container::-webkit-scrollbar-thumb:hover {
+      background: #D1D5DB;
+    }
+
+    /* Shifts Tabs Bar (Matching Reference Screenshot) */
+    .shifts-tabs-bar {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+      border-bottom: 1px solid #EDEBE6;
+      padding-bottom: 2px;
+    }
+
+    .shifts-tab-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      color: #6B7280;
+      background: none;
+      border: none;
+      padding: 8px 2px 10px 2px;
+      cursor: pointer;
+      position: relative;
+      transition: color 0.15s ease;
+    }
+
+    .shifts-tab-item:hover {
+      color: #12161E;
+    }
+
+    .shifts-tab-item.active {
+      color: #12161E;
+      font-weight: 600;
+    }
+
+    .shifts-tab-item.active::after {
+      content: "";
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      right: 0;
+      height: 2.5px;
+      background: #12161E;
+      border-radius: 2px;
+    }
+
+    .shifts-tab-item svg {
+      width: 15px;
+      height: 15px;
+      stroke-width: 1.8;
+      opacity: 0.85;
+    }
+
+    /* Collapsible Stat Cards Container */
+    .btn-toggle-metrics {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      height: 30px;
+      padding: 0 10px;
+      background: #FFFFFF;
+      border: 1px solid #E5E7EB;
+      border-radius: 6px;
+      font-size: 11.5px;
+      font-weight: 500;
+      color: #5F6774;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      user-select: none;
+      margin-left: auto;
+    }
+
+    body[dir="rtl"] .btn-toggle-metrics {
+      margin-left: 0;
+      margin-right: auto;
+    }
+
+    .btn-toggle-metrics:hover {
+      background: #FAF9F7;
+      border-color: #D3D0C9;
+      color: #12161E;
+    }
+
+    .btn-toggle-metrics svg {
+      transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .btn-toggle-metrics.collapsed svg {
+      transform: rotate(180deg);
+    }
+
+    .stat-cards-wrapper {
+      transition: max-height 0.28s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.22s ease, margin 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+      overflow: hidden;
+      max-height: 280px;
+      opacity: 1;
+    }
+
+    .stat-cards-wrapper.collapsed {
+      max-height: 0;
+      opacity: 0;
+      margin-top: 0 !important;
+      margin-bottom: -18px !important;
+      pointer-events: none;
+    }
+
+    .stat-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+
+    @media (max-width: 1024px) {
+      .stat-cards-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+    @media (max-width: 640px) {
+      .stat-cards-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .stat-card {
+      background-color: var(--color-stat-card);
+      border: 1px solid var(--color-border-subtle);
+      border-radius: var(--radius-card);
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .stat-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .stat-card-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--color-text-muted);
+    }
+
+    .stat-icon-chip {
+      width: 26px;
+      height: 26px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .chip-blue { background: #EFF6FF; color: #3B82F6; }
+    .chip-green { background: #ECFDF5; color: #10B981; }
+    .chip-pink { background: #FDF2F8; color: #EC4899; }
+    .chip-purple { background: #F5F3FF; color: #8B5CF6; }
+
+    .stat-card-value {
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--color-text-primary);
+      letter-spacing: -0.02em;
+      line-height: 1;
+    }
+
+    .stat-card-sub {
+      font-size: 11px;
+      color: var(--color-text-secondary);
+    }
+
+    /* Farabi Action Bar: Search Input & Black Create Button */
+    .farabi-action-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .farabi-search-wrap {
+      position: relative;
+      width: 240px;
+    }
+
+    .farabi-search-input {
+      width: 100%;
+      height: 38px;
+      padding: 0 14px;
+      border-radius: 8px;
+      border: 1px solid #E5E7EB;
+      background: #FFFFFF;
+      font-size: 12.5px;
+      color: var(--color-text-primary);
+      outline: none;
+      transition: all 0.15s ease;
+    }
+
+    .farabi-search-input:focus {
+      border-color: #12161E;
+      box-shadow: 0 0 0 2px rgba(18, 22, 30, 0.06);
+    }
+
+    .farabi-action-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn-farabi-create {
+      background: #000000;
+      color: #FFFFFF;
+      height: 38px;
+      padding: 0 22px;
+      border-radius: 8px;
+      font-size: 12.5px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s ease;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+    }
+
+    .btn-farabi-create:hover {
+      background: #262626;
+    }
+
+    .btn-farabi-refresh {
+      width: 38px;
+      height: 38px;
+      border-radius: 8px;
+      border: 1px solid #E5E7EB;
+      background: #FFFFFF;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: #5F6774;
+      transition: all 0.15s ease;
+    }
+
+    .btn-farabi-refresh:hover {
+      background: #FAF9F7;
+      color: #000000;
+    }
+
+    /* Table Container Card */
+    .table-card {
+      background: #FFFFFF;
+      border: 1px solid var(--color-border-table);
+      border-radius: var(--radius-table);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+      position: relative;
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      font-size: 12px;
+      text-align: left;
+    }
+
+    body[dir="rtl"] .data-table {
+      text-align: right;
+    }
+
+    /* Sticky Header Row */
+    .data-table thead th {
+      position: sticky;
+      top: 0;
+      background: #FAF9F7;
+      height: 44px;
+      padding: 0 18px;
+      font-size: 10.5px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--color-text-muted);
+      border-bottom: 1px solid var(--color-border-table);
+      border-right: 1px solid var(--color-border-col);
+      user-select: none;
+      z-index: 5;
+    }
+
+    .data-table thead th:last-child {
+      border-right: none;
+    }
+
+    .data-table thead th:first-child {
+      border-top-left-radius: var(--radius-table);
+    }
+
+    .data-table thead th:last-child {
+      border-top-right-radius: var(--radius-table);
+    }
+
+    body[dir="rtl"] .data-table thead th:first-child {
+      border-top-left-radius: 0;
+      border-top-right-radius: var(--radius-table);
+    }
+
+    body[dir="rtl"] .data-table thead th:last-child {
+      border-top-right-radius: 0;
+      border-top-left-radius: var(--radius-table);
+    }
+
+    /* Table Body */
+    .data-table tbody td {
+      height: var(--row-height);
+      padding: 12px 18px;
+      border-bottom: 1px solid var(--color-border-table);
+      border-right: 1px solid var(--color-border-col);
+      color: var(--color-text-primary);
+      vertical-align: middle;
+      background: #FFFFFF;
+      transition: background 0.15s ease;
+    }
+
+    .data-table tbody td:last-child {
+      border-right: none;
+    }
+
+    .data-table tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    .data-table tbody tr:hover td {
+      background: #FAF9F8;
+    }
+
+    .data-table tbody tr.row-selected td {
+      background: #F6F5F2;
+    }
+
+    /* Shift Visual Cell: Block Swatch + Dual English & Arabic Hours */
+    .shift-cell {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .shift-block-swatch {
+      width: 24px;
+      height: 40px;
+      border-radius: 5px;
+      flex-shrink: 0;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+    }
+
+    .swatch-berry-pink { background: #D9386E; }
+    .swatch-cerulean-blue { background: #2F80ED; }
+    .swatch-deep-rose { background: #D6336C; }
+
+    .shift-dual-time {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .shift-time-en {
+      font-size: 12px;
+      font-weight: 600;
+      color: #12161E;
+      white-space: nowrap;
+    }
+
+    .shift-time-ar {
+      font-family: var(--font-arabic) !important;
+      font-size: 12px;
+      font-weight: 500;
+      color: #4B5563;
+      white-space: nowrap;
+    }
+
+    /* Rules Stack: Grey Rounded Pills from Farabi */
+    .rules-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .rule-pill-farabi {
+      display: inline-flex;
+      align-items: center;
+      background: #E5E7EB;
+      color: #1F2937;
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 500;
+      width: fit-content;
+      white-space: nowrap;
+    }
+
+    /* ID Cell */
+    .id-cell {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: monospace;
+      font-size: 12px;
+      font-weight: 600;
+      color: #12161E;
+    }
+
+    .btn-copy {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 2px;
+      color: #9CA3AF;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: color 0.15s ease;
+    }
+
+    .btn-copy:hover {
+      color: #12161E;
+    }
+
+    /* Actions Column: Edit Pencil & Trash Bin from Farabi */
+    .actions-cell {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .action-icon-btn {
+      width: 30px;
+      height: 30px;
+      border-radius: 6px;
+      border: none;
+      background: transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: #6B7280;
+      transition: all 0.15s ease;
+    }
+
+    .action-icon-btn:hover {
+      background: #F3F4F6;
+      color: var(--color-black);
+    }
+
+    .action-icon-btn.delete-btn:hover {
+      background: #FEF2F2;
+      color: #EF4444;
+    }
+
+    .action-icon-btn svg {
+      width: 15px;
+      height: 15px;
+      stroke-width: 1.8;
+    }
+
+    /* Pagination Bar */
+    .pagination-bar {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 18px;
+      padding-top: 10px;
+      font-size: 12px;
+      color: var(--color-text-secondary);
+      flex-wrap: wrap;
+    }
+
+    .items-per-page-container {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .items-per-page-select {
+      height: 32px;
+      padding: 0 10px;
+      border-radius: 6px;
+      border: 1px solid #E5E7EB;
+      background: #FFFFFF;
+      font-size: 11.5px;
+      color: var(--color-text-secondary);
+      outline: none;
+      cursor: pointer;
+    }
+
+    .pagination-controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .page-btn-group {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .page-btn {
+      min-width: 28px;
+      height: 28px;
+      padding: 0 6px;
+      border-radius: 6px;
+      border: 1px solid transparent;
+      background: transparent;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--color-text-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .page-btn:hover {
+      background: #F3F4F6;
+      color: var(--color-black);
+    }
+
+    .page-btn.active {
+      background: #12161E;
+      color: #FFFFFF;
+      font-weight: 600;
+      border-radius: 50%;
+      width: 28px;
+      height: 28px;
+    }
+
+    /* Floating Settings Gear on Right Edge (Farabi) */
+    .farabi-floating-gear {
+      position: fixed;
+      right: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 32px;
+      height: 38px;
+      background: #A31C24;
+      border-top-left-radius: 8px;
+      border-bottom-left-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #FFFFFF;
+      box-shadow: -2px 2px 8px rgba(0,0,0,0.15);
+      cursor: pointer;
+      z-index: 100;
+      transition: background 0.15s ease, width 0.15s ease;
+    }
+
+    .farabi-floating-gear:hover {
+      background: #87141B;
+      width: 36px;
+    }
+
+    body[dir="rtl"] .farabi-floating-gear {
+      right: auto;
+      left: 0;
+      border-top-left-radius: 0;
+      border-bottom-left-radius: 0;
+      border-top-right-radius: 8px;
+      border-bottom-right-radius: 8px;
+      box-shadow: 2px 2px 8px rgba(0,0,0,0.15);
+    }
+
+    /* Toast Notification */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #12161E;
+      color: #FFFFFF;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 500;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      display: none;
+      align-items: center;
+      gap: 8px;
+      z-index: 1000;
+      animation: toastFadeIn 0.2s ease-out;
+    }
+
+    @keyframes toastFadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Mobile Drawer */
+    @media (max-width: 1024px) {
+      .mobile-menu-btn {
+        display: flex;
+      }
+      .sidebar {
+        position: fixed;
+        left: -100%;
+        top: 0;
+        height: 100dvh;
+        box-shadow: 4px 0 24px rgba(0,0,0,0.15);
+        transition: left 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      .sidebar.drawer-open {
+        left: 0;
+      }
+      body[dir="rtl"] .sidebar {
+        left: auto;
+        right: -100%;
+      }
+      body[dir="rtl"] .sidebar.drawer-open {
+        right: 0;
+      }
+      .sidebar-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.3);
+        z-index: 15;
+        display: none;
+      }
+      .sidebar-backdrop.active {
+        display: block;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Floating Settings Gear (Farabi) -->
+  <div class="farabi-floating-gear" title="Farabi Settings" onclick="showToast('Farabi System Settings')">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+  </div>
+
+  <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="closeSidebarDrawer()"></div>
+
+  <div class="app-shell">
+    
+    <!-- Left Sidebar: Fixed ~230px with Farabi Identity -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <a href="shifts.html" class="brand-logo-farabi">
+          <div class="farabi-crest">
+            <span class="ar">فارابي</span>
+            <span class="sub">1996</span>
+          </div>
+          <div class="farabi-brand-text">
+            <span class="farabi-brand-ar">الفارابي</span>
+            <span class="farabi-brand-en">FARABI</span>
+          </div>
+        </a>
+        <button class="collapse-btn" title="Collapse sidebar" onclick="toggleSidebarCollapse()">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="11 17 6 12 11 7"></polyline><polyline points="18 17 13 12 18 7"></polyline></svg>
+        </button>
+      </div>
+
+      <nav class="sidebar-nav">
+        <!-- Section: HR MANAGEMENT -->
+        <div class="nav-section">
+          <div class="nav-section-title">
+            <span data-i18n="hr_management">HR MANAGEMENT</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </div>
+          <a href="dashboard.html" class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+            <span data-i18n="dashboard">Dashboard</span>
+          </a>
+          <a href="users.html" class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            <span data-i18n="users">Users</span>
+          </a>
+          <a href="index.html" class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="14" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+            <span data-i18n="requests">Requests</span>
+          </a>
+          <a class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            <span data-i18n="late_attendance">Late attendance notices</span>
+          </a>
+          <a class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+            <span data-i18n="return_from_leave">Return from leave</span>
+          </a>
+          <a class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+            <span data-i18n="tasks">Tasks</span>
+          </a>
+          <a class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+            <span data-i18n="leaves">Leaves</span>
+          </a>
+        </div>
+
+        <!-- Section: TIME & SCHEDULING -->
+        <div class="nav-section">
+          <div class="nav-section-title">
+            <span data-i18n="time_scheduling">TIME & SCHEDULING</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </div>
+          <!-- Active Item: Shifts -->
+          <a href="shifts.html" class="nav-item active">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            <span data-i18n="shifts">Shifts</span>
+            <svg class="cursor-pointer-badge" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M10 2a2 2 0 0 0-2 2v6.6a2 2 0 0 0-.6 1.4v4a5 5 0 0 0 5 5h3a5 5 0 0 0 5-5v-5a2 2 0 0 0-2-2h-1v-1a2 2 0 0 0-2-2h-1V4a2 2 0 0 0-2-2h-2.4z" fill="#9CA3AF"/>
+            </svg>
+          </a>
+          <a class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+            <span data-i18n="scheduler">Scheduler</span>
+          </a>
+          <a class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+            <span data-i18n="attendance">Attendance</span>
+          </a>
+          <a class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
+            <span data-i18n="branch_maintenance">Branch maintenance</span>
+          </a>
+          <a class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+            <span data-i18n="maintenance_settings">Maintenance settings</span>
+          </a>
+        </div>
+
+        <!-- Section: PAYROLL & FINANCE -->
+        <div class="nav-section">
+          <div class="nav-section-title">
+            <span data-i18n="payroll_finance">PAYROLL & FINANCE</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </div>
+          <a class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+            <span data-i18n="payroll_tasks">Payroll tasks & go-live</span>
+          </a>
+          <a class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+            <span data-i18n="compliance_hub">Compliance Hub</span>
+          </a>
+          <a class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+            <span data-i18n="payroll">Payroll</span>
+          </a>
+          <a class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="6" width="20" height="12" rx="2"></rect><circle cx="12" cy="12" r="2"></circle></svg>
+            <span data-i18n="end_of_service">End of service</span>
+          </a>
+          <a class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+            <span data-i18n="violations">Violations</span>
+          </a>
+          <a class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="6" width="20" height="12" rx="2"></rect><circle cx="12" cy="12" r="2"></circle></svg>
+            <span data-i18n="salaries">Salaries</span>
+          </a>
+          <a class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="3" y1="21" x2="21" y2="21"></line><line x1="3" y1="10" x2="21" y2="10"></line><polyline points="5 6 12 3 19 6"></polyline><line x1="4" y1="10" x2="4" y2="21"></line><line x1="20" y1="10" x2="20" y2="21"></line></svg>
+            <span data-i18n="loans">Loans</span>
+          </a>
+          <a class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+            <span data-i18n="settings">Settings</span>
+          </a>
+        </div>
+      </nav>
+    </aside>
+
+    <!-- Main Panel -->
+    <main class="main-panel">
+      
+      <!-- Pinned Header -->
+      <div class="header-bar">
+        <div class="header-left-group">
+          <button class="mobile-menu-btn" onclick="openSidebarDrawer()" title="Open Navigation Menu">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+          </button>
+          
+          <div class="breadcrumb">
+            <svg class="device-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="3" width="20" height="14" rx="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+            <span class="chevron">›</span>
+            <a href="#" data-i18n="time_scheduling_upper">TIME & SCHEDULING</a>
+            <span class="chevron">›</span>
+            <span class="current" data-i18n="shifts_upper">SHIFTS</span>
+          </div>
+        </div>
+
+        <div class="header-right">
+          <!-- Translation Toggle -->
+          <button class="header-icon-btn" title="Toggle Language (English / Arabic)" onclick="toggleLanguage()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 8l6 6M4 14h7M2 5h12M7 2v3M22 22l-5-10-5 10M14 18h6"></path></svg>
+          </button>
+
+          <!-- Notifications -->
+          <button class="header-icon-btn" title="Notifications">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+            <span class="badge-dot"></span>
+          </button>
+
+          <!-- User Block (Hamdan Ghanem H. / gm@farabiclinics.com) -->
+          <div class="user-block">
+            <div class="user-avatar-circle">HG</div>
+            <div class="user-info">
+              <span class="user-name">Hamdan Ghanem H...</span>
+              <span class="user-email">gm@farabiclinics.com</span>
+            </div>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6B7280" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dedicated Scroll Container: 56px margin -->
+      <div class="scroll-container" id="mainScrollContainer">
+        
+        <!-- Shifts Navigation Tabs (Exact from Farabi: Shifts Presets, Templates, Fixed Hours) -->
+        <div class="shifts-tabs-bar">
+          <button class="shifts-tab-item active" onclick="switchShiftTab(this, 'presets')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            <span data-i18n="tab_shifts_presets">Shifts Presets</span>
+          </button>
+          <button class="shifts-tab-item" onclick="switchShiftTab(this, 'templates')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="18" height="18" rx="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line></svg>
+            <span data-i18n="tab_templates">Templates</span>
+          </button>
+          <button class="shifts-tab-item" onclick="switchShiftTab(this, 'fixed')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            <span data-i18n="tab_fixed_hours">Fixed Hours</span>
+          </button>
+
+          <!-- Collapsible Metric Cards Toggle -->
+          <button id="toggleMetricsBtn" class="btn-toggle-metrics" onclick="toggleMetricsSection()" title="Collapse or Expand Metrics Cards">
+            <span id="toggleMetricsText" data-i18n="hide_metrics">Hide Cards</span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="18 15 12 9 6 15"></polyline>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Collapsible Stat Cards Container in #FAF9F7 -->
+        <div class="stat-cards-wrapper" id="statCardsWrapper">
+          <div class="stat-cards-grid">
+            <!-- Card 1 -->
+            <div class="stat-card">
+              <div class="stat-card-header">
+                <span class="stat-card-label" data-i18n="stat_active_shifts">ACTIVE SHIFT PRESETS</span>
+                <div class="stat-icon-chip chip-blue">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                </div>
+              </div>
+              <div class="stat-card-value" id="metric-shifts-count">441</div>
+              <div class="stat-card-sub" data-i18n="stat_active_shifts_sub">Across all Farabi clinics</div>
+            </div>
+
+            <!-- Card 2 -->
+            <div class="stat-card">
+              <div class="stat-card-header">
+                <span class="stat-card-label" data-i18n="stat_scheduled_today">SCHEDULED TODAY</span>
+                <div class="stat-icon-chip chip-green">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle></svg>
+                </div>
+              </div>
+              <div class="stat-card-value">1,472</div>
+              <div class="stat-card-sub" data-i18n="stat_scheduled_today_sub">98.4% on-time attendance</div>
+            </div>
+
+            <!-- Card 3 -->
+            <div class="stat-card">
+              <div class="stat-card-header">
+                <span class="stat-card-label" data-i18n="stat_overnight_shifts">NIGHT & EMERGENCY</span>
+                <div class="stat-icon-chip chip-pink">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                </div>
+              </div>
+              <div class="stat-card-value">18</div>
+              <div class="stat-card-sub" data-i18n="stat_overnight_shifts_sub">24/7 Dental emergency coverage</div>
+            </div>
+
+            <!-- Card 4 -->
+            <div class="stat-card">
+              <div class="stat-card-header">
+                <span class="stat-card-label" data-i18n="stat_avg_grace">AVERAGE GRACE WINDOW</span>
+                <div class="stat-icon-chip chip-purple">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v6l4 2"></path></svg>
+                </div>
+              </div>
+              <div class="stat-card-value">15m</div>
+              <div class="stat-card-sub" data-i18n="stat_avg_grace_sub">Configured punch tolerances</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Farabi Action Bar: Search Input & Black Create Button (Matching Reference Screenshot) -->
+        <div class="farabi-action-bar">
+          <div class="farabi-search-wrap">
+            <input type="text" id="searchInput" class="farabi-search-input" placeholder="Search" data-i18n-ph="search_ph" oninput="handleSearch()">
+          </div>
+
+          <div class="farabi-action-right">
+            <button class="btn-farabi-create" onclick="showToast('Create new shift preset modal opened')">
+              <span data-i18n="create_btn">Create</span>
+            </button>
+            <button class="btn-farabi-refresh" title="Refresh shifts list" onclick="refreshTable()">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Table Card: Exact Columns from Screenshot -->
+        <div class="table-card">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th style="width: 160px;">
+                  <span data-i18n="th_id">ID</span>
+                </th>
+                <th style="width: 250px;">
+                  <span data-i18n="th_shift">SHIFT</span>
+                </th>
+                <th>
+                  <span data-i18n="th_clock_in_rules">CLOCK-IN RULES</span>
+                </th>
+                <th>
+                  <span data-i18n="th_clock_out_rules">CLOCK-OUT RULES</span>
+                </th>
+                <th style="width: 110px; text-align: center;">
+                  <span data-i18n="th_actions">ACTIONS</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody id="tableBody">
+              <!-- Dynamically populated from exact screenshot data -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination Bar (Items per page: 10, 1-10 of 441, arrows) -->
+        <div class="pagination-bar">
+          <div class="items-per-page-container">
+            <span style="font-size: 11.5px; color: #6B7280;" data-i18n="items_per_page">Items per page:</span>
+            <select class="items-per-page-select">
+              <option value="10">10</option>
+              <option value="25">25</option>
+              <option value="50">50</option>
+            </select>
+          </div>
+
+          <div style="font-size: 12px; color: #4B5563;" id="showingRange">
+            1-10 of 441
+          </div>
+
+          <div class="pagination-controls">
+            <button class="page-btn" title="First page">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="11 19 2 12 11 5"></polyline><polyline points="22 19 13 12 22 5"></polyline></svg>
+            </button>
+            <button class="page-btn" title="Previous page">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+            </button>
+            <button class="page-btn active">1</button>
+            <button class="page-btn" title="Next page">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </button>
+            <button class="page-btn" title="Last page">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="13 19 22 12 13 5"></polyline><polyline points="2 19 11 12 2 5"></polyline></svg>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </main>
+
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // Bilingual Localization Dictionary
+    const translations = {
+      en: {
+        hr_management: "HR MANAGEMENT",
+        time_scheduling: "TIME & SCHEDULING",
+        payroll_finance: "PAYROLL & FINANCE",
+        time_scheduling_upper: "TIME & SCHEDULING",
+        shifts_upper: "SHIFTS",
+        dashboard: "Dashboard",
+        users: "Users",
+        requests: "Requests",
+        late_attendance: "Late attendance notices",
+        return_from_leave: "Return from leave",
+        tasks: "Tasks",
+        leaves: "Leaves",
+        shifts: "Shifts",
+        scheduler: "Scheduler",
+        attendance: "Attendance",
+        branch_maintenance: "Branch maintenance",
+        maintenance_settings: "Maintenance settings",
+        payroll_tasks: "Payroll tasks & go-live",
+        compliance_hub: "Compliance Hub",
+        payroll: "Payroll",
+        end_of_service: "End of service",
+        violations: "Violations",
+        salaries: "Salaries",
+        loans: "Loans",
+        settings: "Settings",
+        tab_shifts_presets: "Shifts Presets",
+        tab_templates: "Templates",
+        tab_fixed_hours: "Fixed Hours",
+        search_ph: "Search",
+        create_btn: "Create",
+        th_id: "ID",
+        th_shift: "SHIFT",
+        th_clock_in_rules: "CLOCK-IN RULES",
+        th_clock_out_rules: "CLOCK-OUT RULES",
+        th_actions: "ACTIONS",
+        hide_metrics: "Hide Cards",
+        show_metrics: "Show Cards",
+        stat_active_shifts: "ACTIVE SHIFT PRESETS",
+        stat_active_shifts_sub: "Across all Farabi clinics",
+        stat_scheduled_today: "SCHEDULED TODAY",
+        stat_scheduled_today_sub: "98.4% on-time attendance",
+        stat_overnight_shifts: "NIGHT & EMERGENCY",
+        stat_overnight_shifts_sub: "24/7 Dental emergency coverage",
+        stat_avg_grace: "AVERAGE GRACE WINDOW",
+        stat_avg_grace_sub: "Configured punch tolerances",
+        items_per_page: "Items per page:"
+      },
+      ar: {
+        hr_management: "إدارة الموارد البشرية",
+        time_scheduling: "الوقت والجدولة",
+        payroll_finance: "الرواتب والمالية",
+        time_scheduling_upper: "الوقت والجدولة",
+        shifts_upper: "المناوبات",
+        dashboard: "لوحة التحكم",
+        users: "المستخدمون",
+        requests: "الطلبات",
+        late_attendance: "إشعارات التأخير",
+        return_from_leave: "العودة من الإجازة",
+        tasks: "المهام",
+        leaves: "الإجازات",
+        shifts: "المناوبات",
+        scheduler: "المجدول",
+        attendance: "الحضور والانصراف",
+        branch_maintenance: "صيانة الفروع",
+        maintenance_settings: "إعدادات الصيانة",
+        payroll_tasks: "مهام مسير الرواتب",
+        compliance_hub: "مركز الامتثال",
+        payroll: "مسير الرواتب",
+        end_of_service: "مكافأة نهاية الخدمة",
+        violations: "المخالفات",
+        salaries: "الرواتب",
+        loans: "القروض",
+        settings: "الإعدادات",
+        tab_shifts_presets: "إعدادات المناوبات المسبقة",
+        tab_templates: "القوالب",
+        tab_fixed_hours: "ساعات عمل ثابتة",
+        search_ph: "بحث",
+        create_btn: "إنشاء",
+        th_id: "المعرّف",
+        th_shift: "المناوبة",
+        th_clock_in_rules: "قواعد تسجيل الدخول",
+        th_clock_out_rules: "قواعد تسجيل الخروج",
+        th_actions: "الإجراءات",
+        hide_metrics: "إخفاء البطاقات",
+        show_metrics: "عرض البطاقات",
+        stat_active_shifts: "المناوبات المسبقة النشطة",
+        stat_active_shifts_sub: "عبر كافة مجمعات الفارابي",
+        stat_scheduled_today: "المجدولون اليوم",
+        stat_scheduled_today_sub: "٩٨.٤٪ نسبة الالتزام بالحضور",
+        stat_overnight_shifts: "طوارئ ومناوبات ليلية",
+        stat_overnight_shifts_sub: "تغطية طوارئ الأسنان ٢٤/٧",
+        stat_avg_grace: "متوسط فترة السماح",
+        stat_avg_grace_sub: "سماح البصمة المعتمد",
+        items_per_page: "عناصر لكل صفحة:"
+      }
+    };
+
+    // EXACT Shift Data Rows from User Reference Image
+    const shiftsTableData = [
+      {
+        id: "enr6I8WvqS",
+        swatchClass: "swatch-berry-pink",
+        hoursEn: "9:30 AM - 12:00 PM",
+        hoursAr: "9:30 ص - 12:00 م",
+        clockInRules: [
+          "Clock-in window start at: 7:30 AM",
+          "Clock-in window end at: 11:30 AM"
+        ],
+        clockOutRules: [
+          "Clock-out window start at: 10:00 AM",
+          "Clock-out window end at: 2:00 PM"
+        ]
+      },
+      {
+        id: "HWSVtlDrom",
+        swatchClass: "swatch-cerulean-blue",
+        hoursEn: "12:30 PM - 12:00 AM",
+        hoursAr: "12:30 م - 12:00 ص",
+        clockInRules: [
+          "Clock-in window start at: 10:30 AM",
+          "Clock-in window end at: 2:30 PM"
+        ],
+        clockOutRules: [
+          "Clock-out window start at: 10:00 PM",
+          "Clock-out window end at: 2:00 AM"
+        ]
+      },
+      {
+        id: "2feY5XM6fr",
+        swatchClass: "swatch-cerulean-blue",
+        hoursEn: "12:00 PM - 12:30 AM",
+        hoursAr: "12:00 م - 12:30 ص",
+        clockInRules: [
+          "Clock-in window start at: 10:00 AM",
+          "Clock-in window end at: 2:00 PM"
+        ],
+        clockOutRules: [
+          "Clock-out window start at: 10:30 PM",
+          "Clock-out window end at: 2:30 AM"
+        ]
+      },
+      {
+        id: "vzFmzDoNU0",
+        swatchClass: "swatch-berry-pink",
+        hoursEn: "10:00 PM - 12:00 AM",
+        hoursAr: "10:00 م - 12:00 ص",
+        clockInRules: [
+          "Clock-in window start at: 8:00 PM",
+          "Clock-in window end at: 12:00 AM"
+        ],
+        clockOutRules: [
+          "Clock-out window start at: 10:00 PM",
+          "Clock-out window end at: 2:00 AM"
+        ]
+      },
+      {
+        id: "xuGocPeNMW",
+        swatchClass: "swatch-berry-pink",
+        hoursEn: "10:00 PM - 1:30 AM",
+        hoursAr: "10:00 م - 1:30 ص",
+        clockInRules: [
+          "Clock-in window start at: 8:00 PM",
+          "Clock-in window end at: 12:00 AM"
+        ],
+        clockOutRules: [
+          "Clock-out window start at: 11:30 PM",
+          "Clock-out window end at: 3:30 AM"
+        ]
+      },
+      {
+        id: "9mKc58RtY2",
+        swatchClass: "swatch-deep-rose",
+        hoursEn: "2:30 PM - 5:00 PM",
+        hoursAr: "2:30 م - 5:00 م",
+        clockInRules: [
+          "Clock-in window start at: 12:30 PM",
+          "Clock-in window end at: 3:30 PM"
+        ],
+        clockOutRules: [
+          "Clock-out window start at: 4:00 PM",
+          "Clock-out window end at: 7:00 PM"
+        ]
+      }
+    ];
+
+    let currentLang = 'en';
+    let searchQuery = '';
+
+    function switchLanguage(lang) {
+      currentLang = lang;
+      const html = document.documentElement;
+      const body = document.body;
+
+      if (lang === 'ar') {
+        html.setAttribute('lang', 'ar');
+        html.setAttribute('dir', 'rtl');
+        body.setAttribute('dir', 'rtl');
+        body.classList.add('lang-ar');
+      } else {
+        html.setAttribute('lang', 'en');
+        html.setAttribute('dir', 'ltr');
+        body.setAttribute('dir', 'ltr');
+        body.classList.remove('lang-ar');
+      }
+
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (translations[lang][key]) {
+          el.textContent = translations[lang][key];
+        }
+      });
+
+      document.querySelectorAll('[data-i18n-ph]').forEach(el => {
+        const key = el.getAttribute('data-i18n-ph');
+        if (translations[lang][key]) {
+          el.setAttribute('placeholder', translations[lang][key]);
+        }
+      });
+
+      renderTable();
+    }
+
+    function toggleLanguage() {
+      switchLanguage(currentLang === 'en' ? 'ar' : 'en');
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById('tableBody');
+      const filtered = shiftsTableData.filter(shift => {
+        const searchStr = (shift.id + ' ' + shift.hoursEn + ' ' + shift.hoursAr).toLowerCase();
+        return searchQuery === '' || searchStr.includes(searchQuery);
+      });
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; padding: 48px; color: #9CA3AF;">
+          ${currentLang === 'ar' ? 'لا توجد مناوبات مطابقة للبحث' : 'No matching shift presets found'}
+        </td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map((shift, idx) => {
+        const inRulesHtml = shift.clockInRules.map(r => `<div class="rule-pill-farabi">${r}</div>`).join('');
+        const outRulesHtml = shift.clockOutRules.map(r => `<div class="rule-pill-farabi">${r}</div>`).join('');
+
+        return `
+          <tr>
+            <td>
+              <div class="id-cell">
+                <button class="btn-copy" title="Copy ID" onclick="copyText('${shift.id}')">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                </button>
+                <span>${shift.id}</span>
+              </div>
+            </td>
+            <td>
+              <div class="shift-cell">
+                <div class="shift-block-swatch ${shift.swatchClass}"></div>
+                <div class="shift-dual-time">
+                  <span class="shift-time-en">${shift.hoursEn}</span>
+                  <span class="shift-time-ar">${shift.hoursAr}</span>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="rules-stack">
+                ${inRulesHtml}
+              </div>
+            </td>
+            <td>
+              <div class="rules-stack">
+                ${outRulesHtml}
+              </div>
+            </td>
+            <td>
+              <div class="actions-cell">
+                <!-- Edit Pencil Icon from Farabi -->
+                <button class="action-icon-btn" title="Edit Shift Preset" onclick="showToast('Editing ${shift.id}')">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                </button>
+                <!-- Trash Bin Icon from Farabi -->
+                <button class="action-icon-btn delete-btn" title="Delete Shift Preset" onclick="deleteShift('${shift.id}')">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function handleSearch() {
+      searchQuery = document.getElementById('searchInput').value.trim().toLowerCase();
+      renderTable();
+    }
+
+    function deleteShift(id) {
+      const idx = shiftsTableData.findIndex(s => s.id === id);
+      if (idx !== -1) {
+        shiftsTableData.splice(idx, 1);
+        renderTable();
+        showToast(currentLang === 'ar' ? `تم حذف المناوبة ${id}` : `Deleted shift preset ${id}`);
+      }
+    }
+
+    function copyText(txt) {
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(txt);
+      }
+      showToast(currentLang === 'ar' ? `تم نسخ المعرّف: ${txt}` : `Copied ID: ${txt}`);
+    }
+
+    function switchShiftTab(btn, tab) {
+      document.querySelectorAll('.shifts-tab-item').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      showToast(currentLang === 'ar' ? `تم التبديل إلى: ${btn.innerText.trim()}` : `Switched to: ${btn.innerText.trim()}`);
+    }
+
+    function toggleMetricsSection() {
+      const wrapper = document.getElementById('statCardsWrapper');
+      const btn = document.getElementById('toggleMetricsBtn');
+      const textSpan = document.getElementById('toggleMetricsText');
+      
+      const isCollapsed = wrapper.classList.toggle('collapsed');
+      btn.classList.toggle('collapsed', isCollapsed);
+      
+      const key = isCollapsed ? 'show_metrics' : 'hide_metrics';
+      textSpan.setAttribute('data-i18n', key);
+      textSpan.textContent = translations[currentLang][key];
+
+      try {
+        localStorage.setItem('farabi_shifts_metrics_collapsed', isCollapsed ? 'true' : 'false');
+      } catch (e) {}
+    }
+
+    function toggleSidebarCollapse() {
+      const sidebar = document.getElementById('sidebar');
+      sidebar.classList.toggle('collapsed');
+    }
+
+    function openSidebarDrawer() {
+      document.getElementById('sidebar').classList.add('drawer-open');
+      document.getElementById('sidebarBackdrop').classList.add('active');
+    }
+
+    function closeSidebarDrawer() {
+      document.getElementById('sidebar').classList.remove('drawer-open');
+      document.getElementById('sidebarBackdrop').classList.remove('active');
+    }
+
+    function refreshTable() {
+      showToast(currentLang === 'ar' ? 'تم تحديث قائمة المناوبات' : 'Shift presets refreshed');
+      renderTable();
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.style.display = 'flex';
+      clearTimeout(window.toastTimer);
+      window.toastTimer = setTimeout(() => {
+        toast.style.display = 'none';
+      }, 2500);
+    }
+
+    // Restore collapsible metrics state
+    try {
+      if (localStorage.getItem('farabi_shifts_metrics_collapsed') === 'true') {
+        const wrapper = document.getElementById('statCardsWrapper');
+        const btn = document.getElementById('toggleMetricsBtn');
+        const textSpan = document.getElementById('toggleMetricsText');
+        if (wrapper && btn && textSpan) {
+          wrapper.classList.add('collapsed');
+          btn.classList.add('collapsed');
+          textSpan.setAttribute('data-i18n', 'show_metrics');
+          textSpan.textContent = translations[currentLang].show_metrics;
+        }
+      }
+    } catch(e) {}
+
+    // Initial table render
+    renderTable();
+  </script>
+</body>
+</html>
