@@ -763,15 +763,37 @@
       border-color: #D3D0C9;
     }
 
-    /* Table Container: Rounded border (~16px), vertical dividers */
+    /* Table Container: Rounded border (~16px), vertical dividers & horizontal scrolling */
     .table-card {
       background: #FFFFFF;
       border: 1px solid var(--color-border-table);
       border-radius: var(--radius-table);
       position: relative;
+      overflow-x: auto;
+      overflow-y: hidden;
+      max-width: 100%;
+      -webkit-overflow-scrolling: touch;
     }
+
+    /* Custom subtle horizontal scrollbar for the table */
+    .table-card::-webkit-scrollbar {
+      height: 6px;
+    }
+    .table-card::-webkit-scrollbar-track {
+      background: #FAF9F7;
+      border-radius: 0 0 16px 16px;
+    }
+    .table-card::-webkit-scrollbar-thumb {
+      background: #D8D6D1;
+      border-radius: 9999px;
+    }
+    .table-card::-webkit-scrollbar-thumb:hover {
+      background: #B4B1A9;
+    }
+
     table.data-table {
       width: 100%;
+      min-width: 980px;
       border-collapse: separate;
       border-spacing: 0;
       text-align: left;
