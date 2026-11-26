@@ -769,31 +769,36 @@
       border: 1px solid var(--color-border-table);
       border-radius: var(--radius-table);
       position: relative;
+      max-width: 100%;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+    }
+
+    .table-responsive-wrapper {
+      width: 100%;
       overflow-x: auto;
       overflow-y: hidden;
-      max-width: 100%;
       -webkit-overflow-scrolling: touch;
     }
 
     /* Custom subtle horizontal scrollbar for the table */
-    .table-card::-webkit-scrollbar {
+    .table-responsive-wrapper::-webkit-scrollbar {
       height: 6px;
     }
-    .table-card::-webkit-scrollbar-track {
+    .table-responsive-wrapper::-webkit-scrollbar-track {
       background: #FAF9F7;
-      border-radius: 0 0 16px 16px;
     }
-    .table-card::-webkit-scrollbar-thumb {
+    .table-responsive-wrapper::-webkit-scrollbar-thumb {
       background: #D8D6D1;
       border-radius: 9999px;
     }
-    .table-card::-webkit-scrollbar-thumb:hover {
+    .table-responsive-wrapper::-webkit-scrollbar-thumb:hover {
       background: #B4B1A9;
     }
 
     table.data-table {
       width: 100%;
-      min-width: 980px;
+      min-width: 1100px;
       border-collapse: separate;
       border-spacing: 0;
       text-align: left;
@@ -1466,69 +1471,71 @@
 
         <!-- Users Data Table Card: Exact Design Language -->
         <div class="table-card">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th style="width: 44px; text-align: center;">
-                  <label class="custom-checkbox">
-                    <input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll(this)">
-                    <span class="checkmark"></span>
-                  </label>
-                </th>
-                <th style="width: 50px;">
-                  <div class="th-wrap">
-                    <span>#</span>
-                    <svg class="sort-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>
-                  </div>
-                </th>
-                <th>
-                  <div class="th-wrap">
-                    <span data-i18n="th_name">NAME</span>
-                    <svg class="sort-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 15l5 5 5-5M7 9l5-5 5 5"></path></svg>
-                  </div>
-                </th>
-                <th>
-                  <div class="th-wrap">
-                    <span data-i18n="th_job_title">JOB TITLE</span>
-                    <svg class="sort-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 15l5 5 5-5M7 9l5-5 5 5"></path></svg>
-                  </div>
-                </th>
-                <th>
-                  <div class="th-wrap">
-                    <span data-i18n="th_nationality">NATIONALITY</span>
-                    <svg class="sort-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 15l5 5 5-5M7 9l5-5 5 5"></path></svg>
-                  </div>
-                </th>
-                <th>
-                  <div class="th-wrap">
-                    <span data-i18n="th_location">LOCATION</span>
-                    <svg class="sort-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 15l5 5 5-5M7 9l5-5 5 5"></path></svg>
-                  </div>
-                </th>
-                <th>
-                  <div class="th-wrap">
-                    <span data-i18n="th_phone">PHONE</span>
-                    <svg class="sort-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 15l5 5 5-5M7 9l5-5 5 5"></path></svg>
-                  </div>
-                </th>
-                <th>
-                  <div class="th-wrap">
-                    <span data-i18n="th_status">STATUS</span>
-                    <svg class="sort-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 15l5 5 5-5M7 9l5-5 5 5"></path></svg>
-                  </div>
-                </th>
-                <th>
-                  <div class="th-wrap">
-                    <span data-i18n="th_actions">ACTIONS</span>
-                    <svg class="sort-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 15l5 5 5-5M7 9l5-5 5 5"></path></svg>
-                  </div>
-                </th>
-              </tr>
-            </thead>
-            <tbody id="usersTableBody">
-              <!-- Dynamically populated from JS array -->
-            </tbody>
-          </table>
+          <div class="table-responsive-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th style="width: 44px; text-align: center;">
+                    <label class="custom-checkbox">
+                      <input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll(this)">
+                      <span class="checkmark"></span>
+                    </label>
+                  </th>
+                  <th style="width: 50px;">
+                    <div class="th-wrap">
+                      <span>#</span>
+                      <svg class="sort-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>
+                    </div>
+                  </th>
+                  <th>
+                    <div class="th-wrap">
+                      <span data-i18n="th_name">NAME</span>
+                      <svg class="sort-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 15l5 5 5-5M7 9l5-5 5 5"></path></svg>
+                    </div>
+                  </th>
+                  <th>
+                    <div class="th-wrap">
+                      <span data-i18n="th_job_title">JOB TITLE</span>
+                      <svg class="sort-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 15l5 5 5-5M7 9l5-5 5 5"></path></svg>
+                    </div>
+                  </th>
+                  <th>
+                    <div class="th-wrap">
+                      <span data-i18n="th_nationality">NATIONALITY</span>
+                      <svg class="sort-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 15l5 5 5-5M7 9l5-5 5 5"></path></svg>
+                    </div>
+                  </th>
+                  <th>
+                    <div class="th-wrap">
+                      <span data-i18n="th_location">LOCATION</span>
+                      <svg class="sort-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 15l5 5 5-5M7 9l5-5 5 5"></path></svg>
+                    </div>
+                  </th>
+                  <th>
+                    <div class="th-wrap">
+                      <span data-i18n="th_phone">PHONE</span>
+                      <svg class="sort-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 15l5 5 5-5M7 9l5-5 5 5"></path></svg>
+                    </div>
+                  </th>
+                  <th>
+                    <div class="th-wrap">
+                      <span data-i18n="th_status">STATUS</span>
+                      <svg class="sort-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 15l5 5 5-5M7 9l5-5 5 5"></path></svg>
+                    </div>
+                  </th>
+                  <th>
+                    <div class="th-wrap">
+                      <span data-i18n="th_actions">ACTIONS</span>
+                      <svg class="sort-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 15l5 5 5-5M7 9l5-5 5 5"></path></svg>
+                    </div>
+                  </th>
+                </tr>
+              </thead>
+              <tbody id="usersTableBody">
+                <!-- Dynamically populated from JS array -->
+              </tbody>
+            </table>
+          </div>
 
           <!-- Table Footer & Pagination -->
           <div class="table-footer">
